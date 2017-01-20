@@ -3,10 +3,12 @@ package miniJava.SyntacticAnalyzer;
 public class Token {
 	private TokenKind kind;
 	private String spelling;
+	private int line;
 	
-	public Token(TokenKind kind, String spelling) {
+	public Token(TokenKind kind, String spelling, int line) {
 		this.kind = kind;
 		this.spelling = spelling;
+		this.line = line;
 		
 		if (kind == TokenKind.IDENTIFIER)
 			this.kind = updateKeywordToken();
@@ -18,6 +20,10 @@ public class Token {
 	
 	public String getSpelling() {
 		return this.spelling;
+	}
+	
+	public int getLine() {
+		return this.line;
 	}
 	
 	private TokenKind updateKeywordToken() {
@@ -39,5 +45,9 @@ public class Token {
 		case "return": return TokenKind.RETURN;
 		default: return TokenKind.IDENTIFIER;
 		}
+	}
+	
+	public String toString() {
+		return String.format("%s[%s]", getKind().toString(), getSpelling());
 	}
 }

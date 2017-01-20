@@ -12,18 +12,20 @@ public class Scanner {
 		this.currentSpelling = new StringBuffer();
 	}
 
-	public Token scan() {		
+	public Token scan() {
 		// Get token
+		int line = 0;
 		TokenKind kind = null;
 		do {
 			// Skip whitespace
 			while (cc == ' ' || cc == '\t' || cc == '\n' || cc == '\r')
 				this.skipIt();
 			
+			line = src.getCurrentLine();
 			kind = scanToken();
 		} while (kind == null); // Comments return null
 		
-		Token t = new Token(kind, currentSpelling.toString());
+		Token t = new Token(kind, currentSpelling.toString(), line);
 		this.currentSpelling = new StringBuffer();
 		System.out.println(t.getKind());
 		

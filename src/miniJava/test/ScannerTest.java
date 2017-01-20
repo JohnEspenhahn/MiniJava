@@ -50,7 +50,7 @@ public class ScannerTest {
 			IDENTIFIER, DOT, IDENTIFIER, SQR_OPEN, NUM, LSS, NUM, SQR_CLOSE
 		});
 		// STATEMENT
-		checkScan("return 1 <= 2;", new TokenKind[] { RETURN, NUM, LSS_EQU, NUM, SEMICOLON });
+		checkScan("return \n\t 1 <= 2;", new TokenKind[] { RETURN, NUM, LSS_EQU, NUM, SEMICOLON });
 		checkScan("if (1 == 2) func(); else func2();", new TokenKind[] {
 			IF, PAREN_OPEN, NUM, EQU, NUM, PAREN_CLOSE, IDENTIFIER, PAREN_OPEN, PAREN_CLOSE, SEMICOLON,
 			ELSE, IDENTIFIER, PAREN_OPEN, PAREN_CLOSE, SEMICOLON
