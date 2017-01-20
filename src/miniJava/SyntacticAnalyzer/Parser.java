@@ -33,6 +33,7 @@ public class Parser {
 				throw new SyntaxError(EOT, ct);
 			}
 		} catch (SyntaxError e) {
+			// System.err.println(e.getMessage());
 			e.printStackTrace();
 			return false;
 		}
@@ -156,6 +157,7 @@ public class Parser {
 	}
 	
 	private void parseReference() throws SyntaxError {
+		Token first_identifier = ct;
 		if (ct.getKind() == THIS) {
 			acceptIt();
 		} else {
@@ -164,6 +166,9 @@ public class Parser {
 				parseIndexing();
 		}
 		
+		parseReferenceExtension(first_identifier);
+	}	
+	private void parseReferenceExtension(Token first_identifier) throws SyntaxError {
 		while(ct.getKind() == DOT) {
 			acceptIt();
 			accept(IDENTIFIER);
@@ -179,7 +184,9 @@ public class Parser {
 	}
 	
 	// Kinda helps with organization, overhead might not be worth it
-	private static TokenKind[] STARTERS_STATEMENT = new TokenKind[] { CURL_OPEN, RETURN, IF, WHILE, INT, BOOLEAN, IDENTIFIER };
+	private static TokenKind[] STARTERS_STATEMENT = new TokenKind[] { 
+			CURL_OPEN, RETURN, IF, WHILE, INT, BOOLEAN, IDENTIFIER, THIS 
+		};
 	static { Arrays.sort(STARTERS_STATEMENT); }
 	
 	private void parseStatement() throws SyntaxError {
@@ -220,11 +227,25 @@ public class Parser {
 			accept(SEMICOLON);
 			break;
 		case IDENTIFIER:
+			Token first_id = ct;
 			acceptIt();
+			if (ct.getKind() == IDENTIFIER) {
+				// Previous id specified non-primative type
+				// We are defining a new variable
+				parseDefine();
+			} else {
+				parseReferenceExtension(first_id); // Parse the rest of the reference
+				if (ct.getKind() == ASSIGN) parseAssign();
+				else if (ct.getKind() == PAREN_OPEN) parseInvoke();
+				else throw new SyntaxError(new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
+			}
+			accept(SEMICOLON);
+			break;
+		case THIS: // TODO We are modifying this - allowed in original grammar, but seems illegal?
+			parseReference();
 			if (ct.getKind() == ASSIGN) parseAssign();
 			else if (ct.getKind() == PAREN_OPEN) parseInvoke();
-			else if (ct.getKind() == IDENTIFIER) parseDefine();
-			else throw new SyntaxError(new TokenKind[] { ASSIGN, PAREN_OPEN, IDENTIFIER }, ct);
+			else throw new SyntaxError(new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
 			accept(SEMICOLON);
 			break;
 		default:
