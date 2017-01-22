@@ -44,8 +44,8 @@ public class ParserTest {
 		checkParse("int i = 0;", WrapperType.FUNCTION, true);
 		checkParse("boolean b = i;", WrapperType.FUNCTION, true);
 		// COMMENT
-		checkParse("1 // sdlkf j;askdjf a;lksjfdlk sajdlkf", WrapperType.FUNCTION, false);
-		checkParse("1 /* askdfj lasjfd lkasjfd kajsd;f */ 2", WrapperType.FUNCTION, false);
+		checkParse("int i = 1; // sdlkf j;askdjf a;lksjfdlk sajdlkf\n", WrapperType.FUNCTION, true);
+		checkParse("int j /* askdfj lasjfd lkasjfd kajsd;f */ = 2;", WrapperType.FUNCTION, true);
 		
 		// INVALID SCAN
 		checkParse(":", WrapperType.FUNCTION, false);
