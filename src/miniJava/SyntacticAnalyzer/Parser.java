@@ -19,8 +19,12 @@ public class Parser {
 		if (ct.getKind() == expected) acceptIt();
 		else throw new SyntaxError(expected, ct);
 	}
-
+	
 	public boolean parseProgram() {
+		return parseProgram(true);
+	}
+
+	public boolean parseProgram(boolean print_stacktrace) {
 		// Load first token
 		this.ct = this.lexer.scan();
 
@@ -33,8 +37,8 @@ public class Parser {
 				throw new SyntaxError(EOT, ct);
 			}
 		} catch (SyntaxError e) {
-			// System.err.println(e.getMessage());
-			e.printStackTrace();
+			if (print_stacktrace) e.printStackTrace();
+			else System.err.println(e.getMessage());
 			return false;
 		}
 		
