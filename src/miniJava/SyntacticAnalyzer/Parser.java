@@ -17,7 +17,7 @@ public class Parser {
 
 	private void accept(TokenKind expected) throws SyntaxError {
 		if (ct.getKind() == expected) acceptIt();
-		else throw new SyntaxError(expected, ct);
+		else throw new SyntaxError(lexer.getSourceFile(), expected, ct);
 	}
 	
 	public boolean parseProgram() {
@@ -34,7 +34,7 @@ public class Parser {
 			}
 
 			if (ct.getKind() != EOT) {
-				throw new SyntaxError(EOT, ct);
+				throw new SyntaxError(lexer.getSourceFile(), EOT, ct);
 			}
 		} catch (SyntaxError e) {
 			if (print_stacktrace) e.printStackTrace();
@@ -119,7 +119,7 @@ public class Parser {
 			parsePrimativeType();
 			break;
 		default:
-			throw new SyntaxError(new TokenKind[] { INT, IDENTIFIER, BOOLEAN }, ct);
+			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, IDENTIFIER, BOOLEAN }, ct);
 		}
 	}
 	
@@ -136,7 +136,7 @@ public class Parser {
 			acceptIt();
 			break;
 		default:
-			throw new SyntaxError(String.format("Expected type at line %d, but got %s", ct.getLine(), ct));
+			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, BOOLEAN }, ct);
 		}
 	}
 	
@@ -241,7 +241,7 @@ public class Parser {
 				parseReferenceExtension(first_id); // Parse the rest of the reference
 				if (ct.getKind() == ASSIGN) parseAssign();
 				else if (ct.getKind() == PAREN_OPEN) parseInvoke();
-				else throw new SyntaxError(new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
+				else throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
 			}
 			accept(SEMICOLON);
 			break;
@@ -249,11 +249,11 @@ public class Parser {
 			parseReference();
 			if (ct.getKind() == ASSIGN) parseAssign();
 			else if (ct.getKind() == PAREN_OPEN) parseInvoke();
-			else throw new SyntaxError(new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
+			else throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
 			accept(SEMICOLON);
 			break;
 		default:
-			throw new SyntaxError(STARTERS_STATEMENT, ct);
+			throw new SyntaxError(lexer.getSourceFile(), STARTERS_STATEMENT, ct);
 		}
 	}
 	

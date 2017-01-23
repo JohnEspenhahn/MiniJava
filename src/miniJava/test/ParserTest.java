@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
-import miniJava.SyntacticAnalyzer.SourceFile;
+import miniJava.SyntacticAnalyzer.SourceStream;
 
 public class ParserTest {
 
@@ -69,7 +69,7 @@ public class ParserTest {
 			break;
 		}
 		
-		Scanner s = new Scanner(new SourceFile(new ByteArrayInputStream(in.getBytes())));
+		Scanner s = new Scanner(new SourceStream(new ByteArrayInputStream(in.getBytes())));
 		Parser p = new Parser(s);
 		
 		assertEquals(ok, p.parseProgram(false));

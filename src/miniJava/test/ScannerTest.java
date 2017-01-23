@@ -7,7 +7,7 @@ import java.io.ByteArrayInputStream;
 import org.junit.Test;
 
 import miniJava.SyntacticAnalyzer.Scanner;
-import miniJava.SyntacticAnalyzer.SourceFile;
+import miniJava.SyntacticAnalyzer.SourceStream;
 import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
 import static miniJava.SyntacticAnalyzer.TokenKind.*;
@@ -78,8 +78,8 @@ public class ScannerTest {
 	
 	private void checkScan(String in, TokenKind[] res) {
 		if (res.length == 0) return;
-		
-		Scanner s = new Scanner(new SourceFile(new ByteArrayInputStream(in.getBytes())));
+			
+		Scanner s = new Scanner(new SourceStream(new ByteArrayInputStream(in.getBytes())));
 		
 		int idx = 0;
 		Token t = null;

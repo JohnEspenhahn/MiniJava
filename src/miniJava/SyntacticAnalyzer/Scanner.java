@@ -1,31 +1,35 @@
 package miniJava.SyntacticAnalyzer;
 
 public class Scanner {
-	private SourceFile src;
+	private SourceStream src;
 	private StringBuffer currentSpelling;
 	private char cc;
 
-	public Scanner(SourceFile s) {
-		this.src = s;
-		this.cc = s.getNext(); 
+	public Scanner(SourceStream src) {
+		this.src = src;
+		this.cc = src.getNext(); 
 		
 		this.currentSpelling = new StringBuffer();
+	}
+	
+	public SourceStream getSourceFile() {
+		return this.src;
 	}
 
 	public Token scan() {
 		// Get token
-		int line = 0;
+		LinePosition start = null;
 		TokenKind kind = null;
 		do {
 			// Skip whitespace
 			while (cc == ' ' || cc == '\t' || cc == '\n' || cc == '\r')
 				this.skipIt();
 			
-			line = src.getCurrentLine();
+			start = src.getCurrentPosition();
 			kind = scanToken();
 		} while (kind == null); // Comments return null
 		
-		Token t = new Token(kind, currentSpelling.toString(), line);
+		Token t = new Token(kind, currentSpelling.toString(), start, src.getCurrentPosition());
 		this.currentSpelling = new StringBuffer();
 		System.out.println(t.getKind());
 		

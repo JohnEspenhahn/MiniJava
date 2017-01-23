@@ -1,7 +1,6 @@
 package miniJava;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import miniJava.SyntacticAnalyzer.Parser;
@@ -23,9 +22,8 @@ public class Compiler {
 		}
 		
 		try {
-			FileInputStream fis = new FileInputStream(f);
-			Parser p = new Parser(new Scanner(new SourceFile(fis)));
-			if (p.parseProgram()) System.exit(0);
+			Parser p = new Parser(new Scanner(new SourceFile(f)));
+			if (p.parseProgram(false)) System.exit(0);
 			else System.exit(4);
 		} catch (IOException e) {
 			e.printStackTrace();
