@@ -31,7 +31,7 @@ public class Scanner {
 		
 		Token t = new Token(kind, currentSpelling.toString(), start, src.getCurrentPosition());
 		this.currentSpelling = new StringBuffer();
-		System.out.println(t.getKind());
+		System.out.println(t);
 		
 		return t;
 	}
@@ -86,14 +86,18 @@ public class Scanner {
 		case '/':
 			takeIt();
 			if (cc == '*') {
-				// Comment block
+				// Comment block (clear taken '/')
+				currentSpelling = new StringBuffer();
 				skipCommentBlock();
 				return null;
 			} else if (cc == '/') {
-				// Comment line
+				// Comment line (clear taken '/')
+				currentSpelling = new StringBuffer();
 				skipCommentLine();
 				return null;
-			} else return TokenKind.DIV;
+			} else {
+				return TokenKind.DIV;
+			}
 		case '[':
 			takeIt();
 			return TokenKind.SQR_OPEN;

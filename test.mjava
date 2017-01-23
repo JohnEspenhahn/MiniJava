@@ -7,6 +7,9 @@ class TestClass {
 		if (args[0] == a_num) a_num = (a_num * a_num) / -2;
 		else a_num = a_num / 2;
 		
+		// Test of a comment
+valid_statement b /* = 1 */ = 2;
+		
 		System.out[5].println(message + a_num);		
 	}
 
