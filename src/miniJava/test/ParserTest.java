@@ -33,6 +33,8 @@ public class ParserTest {
 		checkParse("identifier[1+2-3/4*5]", WrapperType.RESULT, true);
 		checkParse("this", WrapperType.RESULT, true);
 		checkParse("ref.ref2[1<2]", WrapperType.CONDITIONAL, true);
+		checkParse("this.c.k = 1;", WrapperType.FUNCTION, true);
+		checkParse("this.c[b.d.f[1].a].k = 1;", WrapperType.FUNCTION, true);
 		// STATEMENT
 		checkParse("return \n\t 1 <= 2;", WrapperType.FUNCTION, true);
 		checkParse("if (1 == 2) func(); else func2();", WrapperType.FUNCTION, true);
@@ -49,6 +51,15 @@ public class ParserTest {
 		
 		// INVALID SCAN
 		checkParse(":", WrapperType.FUNCTION, false);
+		checkParse("return;", WrapperType.CLASS, false);
+		checkParse("return", WrapperType.CONDITIONAL, false);
+		checkParse("return", WrapperType.RESULT, false);
+		checkParse("if (true) { print(100); }", WrapperType.CLASS, false);
+		checkParse("if (true) { print(100); }", WrapperType.RESULT, false);
+		checkParse("class { void f() { } }", WrapperType.CLASS, false);
+		checkParse("if (true { }) { }", WrapperType.FUNCTION, false);
+		checkParse("this.this = 1;", WrapperType.FUNCTION, false);
+		checkParse("this.this.k = 1;", WrapperType.FUNCTION, false);
 	}
 	
 	private void checkParse(String in, WrapperType wrap, boolean ok) {
