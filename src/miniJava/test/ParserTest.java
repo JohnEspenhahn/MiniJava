@@ -19,6 +19,7 @@ public class ParserTest {
 		checkParse("class c { } class c2 { }", WrapperType.NONE, true);
 		checkParse("class c {} class", WrapperType.NONE, false);
 		checkParse("class c }", WrapperType.NONE, false);
+		checkParse("class c { int t^ = 1; }", WrapperType.NONE, false);
 		// FIELD DECLARATION
 		checkParse("public static int log_id_123_a;", WrapperType.CLASS, true);
 		// METHOD DECLARATION
@@ -94,13 +95,24 @@ public class ParserTest {
 		checkParse("int i = 0;", WrapperType.FUNCTION, true);
 		checkParse("int i j = 0;", WrapperType.FUNCTION, false);
 		checkParse("int i = 0; i j = 0;", WrapperType.FUNCTION, true);
+		
+		// Statement Assign/Invoke
 		checkParse("int i = i j = 0;", WrapperType.FUNCTION, false);
 		checkParse("int i = i = 0;", WrapperType.FUNCTION, false);
 		checkParse("int[] i = j;", WrapperType.FUNCTION, true);
-		checkParse("int[] i = j[1];", WrapperType.FUNCTION, true);
-		checkParse("int[] i = j[];", WrapperType.FUNCTION, false);
+		checkParse("Type[] i = j;", WrapperType.FUNCTION, true);
+		checkParse("this i = j;", WrapperType.FUNCTION, false);
+		checkParse("id.id2();", WrapperType.FUNCTION, true);
+		checkParse("int.j = j;", WrapperType.FUNCTION, false);
+		checkParse("this.j i = k;", WrapperType.FUNCTION, false);
+		checkParse("this i.j = k;", WrapperType.FUNCTION, false);
 		checkParse("this = 1;", WrapperType.FUNCTION, true);
 		checkParse("this();", WrapperType.FUNCTION, true);
+		checkParse("int();", WrapperType.FUNCTION, false);
+		checkParse("int = 1;", WrapperType.FUNCTION, false);
+		
+		checkParse("int[] i = j[1];", WrapperType.FUNCTION, true);
+		checkParse("int[] i = j[];", WrapperType.FUNCTION, false);
 		checkParse("Type id = new Type();", WrapperType.FUNCTION, true);
 		checkParse("id = new Type();", WrapperType.FUNCTION, true);
 		checkParse("id();", WrapperType.FUNCTION, true);

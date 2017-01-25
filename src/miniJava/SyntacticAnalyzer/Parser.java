@@ -109,11 +109,7 @@ public class Parser {
 	private void parseType() throws SyntaxError {
 		switch (ct.getKind()) {
 		case IDENTIFIER:
-			acceptIt();
-			if (ct.getKind() == SQR_OPEN) {
-				accept(SQR_OPEN);
-				accept(SQR_CLOSE);
-			}
+			parseIdType();
 			break;
 		case INT: case BOOLEAN:
 			parsePrimativeType();
@@ -137,6 +133,14 @@ public class Parser {
 			break;
 		default:
 			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, BOOLEAN }, ct);
+		}
+	}
+	
+	private void parseIdType() throws SyntaxError {
+		accept(IDENTIFIER);
+		if (ct.getKind() == SQR_OPEN) {
+			accept(SQR_OPEN);
+			accept(SQR_CLOSE);
 		}
 	}
 	
@@ -170,9 +174,9 @@ public class Parser {
 				parseIndexing();
 		}
 		
-		parseReferenceExtension(first_identifier);
+		parseReferenceExtension();
 	}	
-	private void parseReferenceExtension(Token first_identifier) throws SyntaxError {
+	private void parseReferenceExtension() throws SyntaxError {
 		while(ct.getKind() == DOT) {
 			acceptIt();
 			accept(IDENTIFIER);
@@ -227,21 +231,34 @@ public class Parser {
 			break;
 		case INT: case BOOLEAN:
 			parsePrimativeType();
-			parseDefine();
+			accept(IDENTIFIER);
+			parseAssign();
 			accept(SEMICOLON);
 			break;
 		case IDENTIFIER:
-			Token first_id = ct;
+			// Token first_id = ct;
 			acceptIt();
-			if (ct.getKind() == IDENTIFIER) {
-				// Previous id specified non-primative type
-				// We are defining a new variable
-				parseDefine();
+			if (ct.getKind() == SQR_OPEN) {
+				// Array. Could still either be: TypeId id Define | Reference ( Assign | Invoke )
+				accept(SQR_OPEN);
+				if (Arrays.binarySearch(STARTERS_EXPRESSION, ct.getKind()) >= 0) {
+					// If there is an Expression in square brackets, it's: Reference ( Assign | Invoke )
+					parseExpression();
+					accept(SQR_CLOSE);
+					parseReferenceStatement();
+				} else {
+					// Otherwise just an array type: TypeId id Define
+					accept(SQR_CLOSE);
+					accept(IDENTIFIER);
+					parseAssign();
+				}
+			} else if (ct.getKind() == IDENTIFIER) {
+				// Got "id id", must be: IdType id Assign
+				accept(IDENTIFIER);
+				parseAssign();
 			} else {
-				parseReferenceExtension(first_id); // Parse the rest of the reference
-				if (ct.getKind() == ASSIGN) parseAssign();
-				else if (ct.getKind() == PAREN_OPEN) parseInvoke();
-				else throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
+				// Only other thing it could be is a Reference
+				parseReferenceStatement();
 			}
 			accept(SEMICOLON);
 			break;
@@ -257,6 +274,15 @@ public class Parser {
 		}
 	}
 	
+	private void parseReferenceStatement() throws SyntaxError {
+		parseReferenceExtension();
+		
+		// Reference ( Assign | Invoke ) 
+		if (ct.getKind() == ASSIGN) parseAssign();
+		else if (ct.getKind() == PAREN_OPEN) parseInvoke();
+		else throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { DOT, ASSIGN, PAREN_OPEN }, ct);
+	}
+	
 	private void parseAssign() throws SyntaxError {
 		accept(ASSIGN);
 		parseExpression();
@@ -267,11 +293,6 @@ public class Parser {
 		if (Arrays.binarySearch(STARTERS_EXPRESSION, ct.getKind()) >= 0)
 			parseArgList();
 		accept(PAREN_CLOSE);
-	}
-	
-	private void parseDefine() throws SyntaxError {
-		accept(IDENTIFIER);
-		parseAssign();
 	}
 	
 	// Kinda helps with organization, overhead might not be worth it
