@@ -70,7 +70,7 @@ public class ScannerTest {
 		checkScan("boolean b = i;", new TokenKind[] { BOOLEAN, IDENTIFIER, ASSIGN, IDENTIFIER, SEMICOLON });
 		// COMMENT
 		checkScan("1 // sdlkf j;askdjf a;lksjfdlk sajdlkf", new TokenKind[] { NUM });
-		checkScan("1 /* askdfj lasjfd lkasjfd kajsd;f */ 2", new TokenKind[] { NUM, NUM });
+		checkScan("1 /* askdfj lasjfd lkasjfd kajsd;f */ 2 ^ 2", new TokenKind[] { NUM, NUM, ERROR });
 		
 		// INVALID SCAN
 		checkScan(":", new TokenKind[] { ERROR });
@@ -91,7 +91,7 @@ public class ScannerTest {
 		} while (++idx < res.length);
 		
 		t = s.scan();
-		if (t.getKind() != TokenKind.EOT && t.getKind() != TokenKind.ERROR) {
+		if (t.getKind() != TokenKind.EOT && res[res.length-1] != TokenKind.ERROR) {
 			fail("Unmatched token " + t.getKind() + " at EOT");
 		}
 	}
