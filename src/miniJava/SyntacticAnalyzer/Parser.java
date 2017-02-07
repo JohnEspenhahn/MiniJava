@@ -304,10 +304,55 @@ public class Parser {
 	static { Arrays.sort(STARTERS_EXPRESSION); }
 	
 	private void parseExpression() throws SyntaxError {
-		parseValue();
-		while (isBinOp(ct.getKind())) {
+		parseDisjunction();
+	}
+	
+	private void parseDisjunction() throws SyntaxError {
+		parseConjunction();
+		while (ct.getKind() == TokenKind.OR) {
 			acceptIt();
-			parseExpression();
+			parseConjunction();
+		}
+	}
+	
+	private void parseConjunction() throws SyntaxError {
+		parseEquality();
+		while (ct.getKind() == TokenKind.AND) {
+			acceptIt();
+			parseEquality();
+		}
+	}
+	
+	private void parseEquality() throws SyntaxError {
+		parseRelational();
+		while (ct.getKind() == TokenKind.EQU || ct.getKind() == TokenKind.NOT_EQU) {
+			acceptIt();
+			parseRelational();
+		}
+	}
+	
+	private void parseRelational() throws SyntaxError {
+		parseAdditive();
+		while (ct.getKind() == TokenKind.LSS || ct.getKind() == TokenKind.LSS_EQU
+				|| ct.getKind() == TokenKind.GTR || ct.getKind() == TokenKind.GTR_EQU) {
+			acceptIt();
+			parseAdditive();
+		}
+	}
+	
+	private void parseAdditive() throws SyntaxError {
+		parseMultiplicative();
+		while (ct.getKind() == TokenKind.PLUS || ct.getKind() == TokenKind.MINUS) {
+			acceptIt();
+			parseMultiplicative();
+		}
+	}
+	
+	private void parseMultiplicative() throws SyntaxError {
+		parseValue();
+		while (ct.getKind() == TokenKind.MULT || ct.getKind() == TokenKind.DIV) {
+			acceptIt();
+			parseValue();
 		}
 	}
 	
