@@ -138,17 +138,34 @@ public class ParserTest {
 		checkParse("(1 > (2 < 3))", WrapperType.CONDITIONAL, true);
 		checkParse("((1 > 2) < 3)", WrapperType.CONDITIONAL, true);
 		checkParse("((1 > 2) < !3)", WrapperType.CONDITIONAL, true);
-		checkParse("((1 > --2) < !3)", WrapperType.CONDITIONAL, true);
-		checkParse("((1 -> --2) < !3)", WrapperType.CONDITIONAL, false);
-		checkParse("((1 => --2) < !3)", WrapperType.CONDITIONAL, false);
-		checkParse("((1 => --2) = 3)", WrapperType.CONDITIONAL, false);
-		checkParse("((1 >= --2) == 3)", WrapperType.CONDITIONAL, true);
-		checkParse("((1 >= --2) => 3)", WrapperType.CONDITIONAL, false);
-		checkParse("((1 >= --2) == (3))", WrapperType.CONDITIONAL, true);
+		checkParse("((1 > -2) < !3)", WrapperType.CONDITIONAL, true);
+		checkParse("((1 -> -2) < !3)", WrapperType.CONDITIONAL, false);
+		checkParse("((1 => -2) < !3)", WrapperType.CONDITIONAL, false);
+		checkParse("((1 => -2) = 3)", WrapperType.CONDITIONAL, false);
+		checkParse("((1 >= -2) == 3)", WrapperType.CONDITIONAL, true);
+		checkParse("((1 >= -2) => 3)", WrapperType.CONDITIONAL, false);
+		checkParse("((1 >= -2) == (3))", WrapperType.CONDITIONAL, true);
 		checkParse("1 == ()", WrapperType.CONDITIONAL, false);
 		checkParse("1 == (true)", WrapperType.CONDITIONAL, true);
 		checkParse("int i = 0;", WrapperType.FUNCTION, true);
 		checkParse("boolean b = i;", WrapperType.FUNCTION, true);
+		
+		// "--"
+		checkParse("-b", WrapperType.RESULT, true);
+		checkParse("-(-b)", WrapperType.RESULT, true);
+		checkParse("- -b", WrapperType.RESULT, true);
+		checkParse("a-(-b)", WrapperType.RESULT, true);
+		checkParse("!b", WrapperType.RESULT, true);
+		checkParse("!!b", WrapperType.RESULT, true);
+		
+		checkParse("--b", WrapperType.RESULT, false);
+		checkParse("a - --b", WrapperType.RESULT, false);
+		checkParse("a--+--b", WrapperType.RESULT, false);
+		checkParse("a---b", WrapperType.RESULT, false);
+		
+		// Arithmetic (without type checking)
+		checkParse("a*2-b/3 && -b*3 > 32/434523*512-13 <= 1 || b+1/2", WrapperType.RESULT, true);
+		
 		// COMMENT
 		checkParse("int i = 1; // sdlkf j;askdjf a;lksjfdlk sajdlkf\n", WrapperType.FUNCTION, true);
 		checkParse("int j /* askdfj lasjfd lkasjfd kajsd;f */ = 2;", WrapperType.FUNCTION, true);
