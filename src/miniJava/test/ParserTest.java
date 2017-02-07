@@ -79,7 +79,6 @@ public class ParserTest {
 		checkParse("ref.ref2[1<2] = bc_d1__d;", WrapperType.FUNCTION, true);
 		checkParse("this.c.k = 1;", WrapperType.FUNCTION, true);
 		checkParse("this.c.k = 1", WrapperType.FUNCTION, false);
-		checkParse("this.c[b.d.f[1].a].k = 1;", WrapperType.FUNCTION, true);
 		checkParse("this.c[b.d.f[1].a].k = 1", WrapperType.FUNCTION, false);
 		// STATEMENT
 		checkParse("return \n\t 1 <= 2;", WrapperType.FUNCTION, true);
@@ -112,10 +111,12 @@ public class ParserTest {
 		checkParse("int = 1;", WrapperType.FUNCTION, false);
 		
 		checkParse("int[] i = j[1];", WrapperType.FUNCTION, true);
+		checkParse("i[1].x = j[1];", WrapperType.FUNCTION, true);
 		checkParse("int[] i = j[];", WrapperType.FUNCTION, false);
 		checkParse("Type id = new Type();", WrapperType.FUNCTION, true);
 		checkParse("id = new Type();", WrapperType.FUNCTION, true);
 		checkParse("id();", WrapperType.FUNCTION, true);
+		checkParse("this.c[b.d.f[1].a].k = 1;", WrapperType.FUNCTION, true);
 		checkParse("this = 1", WrapperType.FUNCTION, false);
 		checkParse("this()", WrapperType.FUNCTION, false);
 		checkParse("Type id = new Type()", WrapperType.FUNCTION, false);
@@ -152,6 +153,8 @@ public class ParserTest {
 		checkParse("int i = 1; // sdlkf j;askdjf a;lksjfdlk sajdlkf\n", WrapperType.FUNCTION, true);
 		checkParse("int j /* askdfj lasjfd lkasjfd kajsd;f */ = 2;", WrapperType.FUNCTION, true);
 		
+		checkParse("class C { }   ", WrapperType.NONE, true);
+		
 		// INVALID SCAN
 		checkParse(":", WrapperType.FUNCTION, false);
 		checkParse("return;", WrapperType.CLASS, false);
@@ -163,6 +166,7 @@ public class ParserTest {
 		checkParse("if (true { }) { }", WrapperType.FUNCTION, false);
 		checkParse("this.this = 1;", WrapperType.FUNCTION, false);
 		checkParse("this.this.k = 1;", WrapperType.FUNCTION, false);
+		checkParse(";;", WrapperType.FUNCTION, false);
 	}
 	
 	private void checkParse(String in, WrapperType wrap, boolean ok) {

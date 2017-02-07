@@ -10,7 +10,7 @@ class TestClass {
 		// Test of a comment
 valid_statement b /* = 1 */ = 2;
 		
-		System.out[5].println(message + a_num);		
+		System.out[5].println(message + 
 	}
 
 }
