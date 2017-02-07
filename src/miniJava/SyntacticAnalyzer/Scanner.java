@@ -79,7 +79,8 @@ public class Scanner {
 			return TokenKind.PLUS;
 		case '-':
 			takeIt();
-			return TokenKind.MINUS;
+			if (cc == '-') return TokenKind.DECREMENT;
+			else return TokenKind.MINUS;
 		case '*':
 			takeIt();
 			return TokenKind.MULT;

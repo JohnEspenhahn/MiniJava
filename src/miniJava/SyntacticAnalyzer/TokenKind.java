@@ -5,6 +5,8 @@ public enum TokenKind {
 	GTR, LSS, EQU, LSS_EQU, GTR_EQU, NOT_EQU,
 	AND, OR, NOT, PLUS, MINUS, MULT, DIV,
 	
+	DECREMENT,
+	
 	ASSIGN,
 	DOT, SEMICOLON, COMMA,
 	
