@@ -385,7 +385,7 @@ public class Parser {
 			break;
 		case NOT: case MINUS: // unop
 			acceptIt();
-			parseExpression();
+			parseValue();
 			break;
 		default:
 			parseReference();
