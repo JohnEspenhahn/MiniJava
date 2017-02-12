@@ -3,9 +3,9 @@ package miniJava.SyntacticAnalyzer;
 public class Token {
 	private TokenKind kind;
 	private String spelling;
-	private LinePosition start, end;
+	private SourcePosition start, end;
 	
-	public Token(TokenKind kind, String spelling, LinePosition start, LinePosition end) {
+	public Token(TokenKind kind, String spelling, SourcePosition start, SourcePosition end) {
 		this.kind = kind;
 		this.spelling = spelling;
 		this.start = start;
@@ -23,11 +23,11 @@ public class Token {
 		return this.spelling;
 	}
 	
-	public LinePosition getStart() {
+	public SourcePosition getStart() {
 		return this.start;
 	}
 	
-	public LinePosition getEnd() {
+	public SourcePosition getEnd() {
 		return this.end;
 	}
 	

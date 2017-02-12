@@ -1,9 +1,9 @@
 package miniJava.SyntacticAnalyzer;
 
-public class LinePosition {
+public class SourcePosition {
 	private int line, col;
 	
-	public LinePosition(int line, int col) {
+	public SourcePosition(int line, int col) {
 		this.line = line;
 		this.col = col;
 	}

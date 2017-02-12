@@ -18,7 +18,7 @@ public class Scanner {
 
 	public Token scan() {
 		// Get token
-		LinePosition start = null;
+		SourcePosition start = null;
 		TokenKind kind = null;
 		do {
 			// Skip whitespace

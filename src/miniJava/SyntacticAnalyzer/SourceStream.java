@@ -34,8 +34,8 @@ public class SourceStream {
 		}
 	}
 
-	public LinePosition getCurrentPosition() {
-		return new LinePosition(this.line, this.col);
+	public SourcePosition getCurrentPosition() {
+		return new SourcePosition(this.line, this.col);
 	}
 	
 	public String getErrorMark(Token t) {
