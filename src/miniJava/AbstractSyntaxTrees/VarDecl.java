@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class VarDecl extends LocalDecl {
 	
+	public VarDecl(TypeDenoter t, String name) {
+		this(t, name, SourcePosition.ZERO);
+	}
+	
 	public VarDecl(TypeDenoter t, String name, SourcePosition posn) {
 		super(name, t, posn);
 	}

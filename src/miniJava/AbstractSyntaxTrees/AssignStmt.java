@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class AssignStmt extends Statement
 {
+	public AssignStmt(Reference r, Expression e) {
+		this(r, e, SourcePosition.ZERO);
+	}
+	
     public AssignStmt(Reference r, Expression e, SourcePosition posn){
         super(posn);
         ref = r;

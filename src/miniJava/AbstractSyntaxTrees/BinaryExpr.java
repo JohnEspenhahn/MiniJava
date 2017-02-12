@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class BinaryExpr extends Expression
 {
+	public BinaryExpr(Operator o, Expression e1, Expression e2){
+		this(o,e1,e2,SourcePosition.ZERO);
+	}
+	
     public BinaryExpr(Operator o, Expression e1, Expression e2, SourcePosition posn){
         super(posn);
         operator = o;

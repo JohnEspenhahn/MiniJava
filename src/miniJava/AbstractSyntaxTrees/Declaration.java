@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class Declaration extends AST {
 	
+	public Declaration(String name, TypeDenoter type) {
+		this(name, type, SourcePosition.ZERO);
+	}
+	
 	public Declaration(String name, TypeDenoter type, SourcePosition posn) {
 		super(posn);
 		this.name = name;

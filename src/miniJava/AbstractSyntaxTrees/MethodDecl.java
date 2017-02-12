@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class MethodDecl extends MemberDecl {
 	
+	public MethodDecl(MemberDecl md, ParameterDeclList pl, StatementList sl) {
+		this(md, pl, sl, SourcePosition.ZERO);
+	}
+	
 	public MethodDecl(MemberDecl md, ParameterDeclList pl, StatementList sl, SourcePosition posn){
     super(md,posn);
     parameterDeclList = pl;

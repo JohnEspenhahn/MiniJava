@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 abstract public class MemberDecl extends Declaration {
 
+	public MemberDecl(boolean isPrivate, boolean isStatic, TypeDenoter mt, String name) {
+		this(isPrivate, isStatic, mt, name, SourcePosition.ZERO);
+	}
+	
     public MemberDecl(boolean isPrivate, boolean isStatic, TypeDenoter mt, String name, SourcePosition posn) {
         super(name, mt, posn);
         this.isPrivate = isPrivate;

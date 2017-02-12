@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ClassType extends TypeDenoter
 {
+	public ClassType(Identifier cn) {
+		this(cn, SourcePosition.ZERO);
+	}
+	
     public ClassType(Identifier cn, SourcePosition posn){
         super(TypeKind.CLASS, posn);
         className = cn;

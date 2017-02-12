@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class QRef extends QualifiedRef {
 	
+	public QRef(Reference ref, Identifier id) {
+		this(ref, id, SourcePosition.ZERO);
+	}
+	
 	public QRef(Reference ref, Identifier id, SourcePosition posn){
 		super(posn);
 		this.ref = ref;

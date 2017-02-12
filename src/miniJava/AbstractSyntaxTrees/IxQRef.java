@@ -4,6 +4,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class IxQRef extends QualifiedRef {
 	
+	public IxQRef(Reference ref, Identifier id, Expression exp) {
+		this(ref, id, exp, SourcePosition.ZERO);
+	}
+	
 	public IxQRef(Reference ref, Identifier id, Expression exp, SourcePosition posn){
 		super(posn);
 		this.ref = ref;

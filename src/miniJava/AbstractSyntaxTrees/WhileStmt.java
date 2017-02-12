@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class WhileStmt extends Statement
 {
+	public WhileStmt(Expression e, Statement s) {
+		this(e, s, SourcePosition.ZERO);
+	}
+	
     public WhileStmt(Expression e, Statement s, SourcePosition posn){
         super(posn);
         cond = e;

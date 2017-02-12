@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class Package extends AST {
 
+	public Package(ClassDeclList cdl) {
+		this(cdl, SourcePosition.ZERO);
+	}
+	
   public Package(ClassDeclList cdl, SourcePosition posn) {
     super(posn);
     classDeclList = cdl;

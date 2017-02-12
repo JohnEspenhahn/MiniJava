@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class UnaryExpr extends Expression
 {
+	public UnaryExpr(Operator o, Expression e) {
+		this(o, e, SourcePosition.ZERO);
+	}
+	
     public UnaryExpr(Operator o, Expression e, SourcePosition posn){
         super(posn);
         operator = o;

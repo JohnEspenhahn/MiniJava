@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class LocalDecl extends Declaration {
 	
+	public LocalDecl(String name, TypeDenoter t) {
+		this(name, t, SourcePosition.ZERO);
+	}
+	
 	public LocalDecl(String name, TypeDenoter t, SourcePosition posn){
 		super(name,t,posn);
 	}

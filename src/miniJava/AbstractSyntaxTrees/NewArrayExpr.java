@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class NewArrayExpr extends NewExpr
 {
+	public NewArrayExpr(TypeDenoter et, Expression e) {
+		this(et, e, SourcePosition.ZERO);
+	}
+	
     public NewArrayExpr(TypeDenoter et, Expression e, SourcePosition posn){
         super(posn);
         eltType = et;

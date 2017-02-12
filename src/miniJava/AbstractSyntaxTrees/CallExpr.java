@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class CallExpr extends Expression
 {
+	public CallExpr(Reference f, ExprList el) {
+		this(f, el, SourcePosition.ZERO);
+	}
+	
     public CallExpr(Reference f, ExprList el, SourcePosition posn){
         super(posn);
         functionRef = f;

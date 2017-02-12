@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class VarDeclStmt extends Statement
 {
+	public VarDeclStmt(VarDecl vd, Expression e) {
+		this(vd, e, SourcePosition.ZERO);
+	}
+	
     public VarDeclStmt(VarDecl vd, Expression e, SourcePosition posn){
         super(posn);
         varDecl = vd;

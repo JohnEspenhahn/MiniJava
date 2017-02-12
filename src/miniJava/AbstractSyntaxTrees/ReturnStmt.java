@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ReturnStmt extends Statement 
 {
+	public ReturnStmt(Expression e) {
+		this(e, SourcePosition.ZERO);
+	}
+	
 	public ReturnStmt(Expression e, SourcePosition posn){
 		super(posn);
 		returnExpr = e;

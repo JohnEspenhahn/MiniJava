@@ -1,6 +1,8 @@
 package miniJava.SyntacticAnalyzer;
 
 public class SourcePosition {
+	public static final SourcePosition ZERO = new SourcePosition(0, 0);
+	
 	private int line, col;
 	
 	public SourcePosition(int line, int col) {

@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class RefExpr extends Expression
 {
+	public RefExpr(Reference r) {
+		this(r, SourcePosition.ZERO);
+	}
+	
     public RefExpr(Reference r, SourcePosition posn){
         super(posn);
         ref = r;

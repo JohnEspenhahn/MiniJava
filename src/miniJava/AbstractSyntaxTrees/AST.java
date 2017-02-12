@@ -6,11 +6,16 @@
 package miniJava.AbstractSyntaxTrees;
 
 import miniJava.SyntacticAnalyzer.SourcePosition;
+import miniJava.SyntacticAnalyzer.Token;
 
 public abstract class AST {
 
   public AST (SourcePosition posn) {
-    this.posn = posn;
+	  if (posn == SourcePosition.ZERO && !Token.ALLOW_DEBUG) {
+		  throw new RuntimeException("Got SourcePosition.ZERO while not debugging!");
+	  }
+	  
+	  this.posn = posn;
   }
   
   public String toString() {

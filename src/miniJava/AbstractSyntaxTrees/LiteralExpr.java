@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class LiteralExpr extends Expression
 {
+	public LiteralExpr(Terminal t) {
+		this(t, SourcePosition.ZERO);
+	}
+	
     public LiteralExpr(Terminal t, SourcePosition posn){
         super(t.posn);
         lit = t;

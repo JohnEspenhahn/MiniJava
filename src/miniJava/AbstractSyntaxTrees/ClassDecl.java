@@ -9,6 +9,10 @@ import  miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ClassDecl extends Declaration {
 
+	public ClassDecl(String cn, FieldDeclList fdl, MethodDeclList mdl) {
+		this(cn, fdl, mdl, SourcePosition.ZERO);
+	}
+	
   public ClassDecl(String cn, FieldDeclList fdl, MethodDeclList mdl, SourcePosition posn) {
 	  super(cn, null, posn);
 	  fieldDeclList = fdl;

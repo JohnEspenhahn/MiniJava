@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class CallStmt extends Statement
 {
+	public CallStmt(Reference m, ExprList el) {
+		this(m, el, SourcePosition.ZERO);
+	}
+	
     public CallStmt(Reference m, ExprList el, SourcePosition posn){
         super(posn);
         methodRef = m;

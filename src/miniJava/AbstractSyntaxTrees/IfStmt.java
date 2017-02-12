@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class IfStmt extends Statement
 {
+	public IfStmt(Expression b, Statement t, Statement e) {
+		this(b, t, e, SourcePosition.ZERO);
+	}
+	
     public IfStmt(Expression b, Statement t, Statement e, SourcePosition posn){
         super(posn);
         cond = b;

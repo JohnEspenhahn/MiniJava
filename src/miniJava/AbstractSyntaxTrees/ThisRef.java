@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ThisRef extends BaseRef {
 	
+	public ThisRef() {
+		this(SourcePosition.ZERO);
+	}
+	
 	public ThisRef(SourcePosition posn) {
 		super(posn);
 	}

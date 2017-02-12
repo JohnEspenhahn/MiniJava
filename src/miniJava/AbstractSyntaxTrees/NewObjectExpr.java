@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class NewObjectExpr extends NewExpr
 {
+	public NewObjectExpr(ClassType ct) {
+		this(ct, SourcePosition.ZERO);
+	}
+	
     public NewObjectExpr(ClassType ct, SourcePosition posn){
         super(posn);
         classtype = ct;

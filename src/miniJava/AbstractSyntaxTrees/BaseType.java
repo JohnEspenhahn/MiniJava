@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class BaseType extends TypeDenoter
 {
+	public BaseType(TypeKind t) {
+		this(t, SourcePosition.ZERO);
+	}
+	
     public BaseType(TypeKind t, SourcePosition posn){
         super(t, posn);
     }

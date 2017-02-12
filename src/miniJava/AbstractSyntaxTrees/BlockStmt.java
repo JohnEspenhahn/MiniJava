@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class BlockStmt extends Statement
 {
+	public BlockStmt(StatementList sl) {
+		this(sl, SourcePosition.ZERO);
+	}
+	
     public BlockStmt(StatementList sl, SourcePosition posn){
         super(posn);
         this.sl = sl;

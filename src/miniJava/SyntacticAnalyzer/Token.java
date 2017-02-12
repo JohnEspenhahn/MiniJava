@@ -1,11 +1,17 @@
 package miniJava.SyntacticAnalyzer;
 
 public class Token {
+	public static boolean ALLOW_DEBUG = false;
+	
 	private TokenKind kind;
 	private String spelling;
 	private SourcePosition start, end;
 	
 	public Token(TokenKind kind, String spelling, SourcePosition start, SourcePosition end) {
+		if ((start == SourcePosition.ZERO || end == SourcePosition.ZERO) && !ALLOW_DEBUG) {
+			throw new RuntimeException("Provided SourcePosition.ZERO while not in debug mode!");
+		}
+		
 		this.kind = kind;
 		this.spelling = spelling;
 		this.start = start;
@@ -13,6 +19,10 @@ public class Token {
 		
 		if (kind == TokenKind.IDENTIFIER)
 			this.kind = updateKeywordToken();
+	}
+	
+	public Token(TokenKind kind, String spelling) {
+		this(kind, spelling, SourcePosition.ZERO, SourcePosition.ZERO);
 	}
 	
 	public TokenKind getKind() {

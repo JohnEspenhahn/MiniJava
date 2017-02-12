@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class IdRef extends BaseRef {
 	
+	public IdRef(Identifier id) {
+		this(id, SourcePosition.ZERO);
+	}
+	
 	public IdRef(Identifier id, SourcePosition posn){
 		super(posn);
 		this.id = id;
