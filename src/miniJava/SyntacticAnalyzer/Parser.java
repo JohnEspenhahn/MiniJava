@@ -85,6 +85,7 @@ public class Parser {
 
 	public Parser(Scanner lexer) {
 		this.lexer = lexer;
+		this.ct = this.lexer.scan();
 	}
 
 	private Token acceptIt() {
@@ -104,7 +105,7 @@ public class Parser {
 
 	public Package parseProgram(boolean print_stacktrace) {
 		// Load first token
-		Token first = this.ct = this.lexer.scan();
+		Token first = this.ct;
 
 		ClassDeclList classes = new ClassDeclList();
 		try {
@@ -124,7 +125,7 @@ public class Parser {
 		return new Package(classes, first.getStart());
 	}
 
-	private ClassDecl parseClassDec() throws SyntaxError {
+	ClassDecl parseClassDec() throws SyntaxError {
 		accept(CLASS);
 		Token cn = accept(IDENTIFIER);
 		accept(CURL_OPEN);
@@ -149,7 +150,7 @@ public class Parser {
 		return new ClassDecl(cn.getSpelling(), fields, methods, cn.getStart());
 	}
 	
-	private MemberDecl parseDeclare() throws SyntaxError {
+	MemberDecl parseDeclare() throws SyntaxError {
 		// Visibility
 		boolean isPrivate = false;
 		if (ct.getKind() == PUBLIC || ct.getKind() == PRIVATE) {
@@ -185,7 +186,7 @@ public class Parser {
 		}
 	}
 	
-	private MethodDecl parseMethodContent(FieldDecl field) throws SyntaxError {
+	MethodDecl parseMethodContent(FieldDecl field) throws SyntaxError {
 		accept(PAREN_OPEN);
 		
 		ParameterDeclList pl;
@@ -210,7 +211,7 @@ public class Parser {
 		return new MethodDecl(field, pl, sl, field.posn);
 	}
 	
-	private TypeDenoter parseType() throws SyntaxError {
+	TypeDenoter parseType() throws SyntaxError {
 		switch (ct.getKind()) {
 		case IDENTIFIER:
 			return parseIdType();
@@ -221,7 +222,7 @@ public class Parser {
 		}
 	}
 	
-	private TypeDenoter parsePrimativeType() throws SyntaxError {
+	TypeDenoter parsePrimativeType() throws SyntaxError {
 		TypeDenoter type;
 		switch (ct.getKind()) {
 		case INT:
@@ -244,7 +245,7 @@ public class Parser {
 		return type;
 	}
 	
-	private TypeDenoter parseIdType() throws SyntaxError {
+	TypeDenoter parseIdType() throws SyntaxError {
 		Identifier id = new Identifier(accept(IDENTIFIER));
 		TypeDenoter type = new ClassType(id, id.posn);
 		if (ct.getKind() == SQR_OPEN) {
@@ -256,7 +257,7 @@ public class Parser {
 		return type;
 	}
 	
-	private ParameterDeclList parseParamList() throws SyntaxError {
+	ParameterDeclList parseParamList() throws SyntaxError {
 		ParameterDeclList pl = new ParameterDeclList();
 		
 		TypeDenoter type = parseType();
@@ -274,7 +275,7 @@ public class Parser {
 		return pl;
 	}
 	
-	private ExprList parseArgList() throws SyntaxError {
+	ExprList parseArgList() throws SyntaxError {
 		ExprList list = new ExprList();
 		
 		list.add(parseExpression());
@@ -286,7 +287,7 @@ public class Parser {
 		return list;
 	}
 	
-	private Reference parseReference() throws SyntaxError {
+	Reference parseReference() throws SyntaxError {
 		BaseRef ref;
 		if (ct.getKind() == THIS) {
 			Token this_token = acceptIt();
@@ -303,7 +304,7 @@ public class Parser {
 		
 		return parseReferenceExtension(ref);
 	}	
-	private Reference parseReferenceExtension(Reference ref) throws SyntaxError {
+	Reference parseReferenceExtension(Reference ref) throws SyntaxError {
 		while(ct.getKind() == DOT) {
 			acceptIt();
 			Identifier id = new Identifier(accept(IDENTIFIER));
@@ -318,7 +319,7 @@ public class Parser {
 		return ref;
 	}
 	
-	private Expression parseIndexing() throws SyntaxError {
+	Expression parseIndexing() throws SyntaxError {
 		accept(SQR_OPEN);
 		Expression exp = parseExpression();
 		accept(SQR_CLOSE);
@@ -332,7 +333,7 @@ public class Parser {
 		};
 	static { Arrays.sort(STARTERS_STATEMENT); }
 	
-	private Statement parseStatement() throws SyntaxError {
+	Statement parseStatement() throws SyntaxError {
 		Token start_token;
 		switch (ct.getKind()) {
 		case CURL_OPEN:
@@ -422,7 +423,7 @@ public class Parser {
 		}
 	}
 	
-	private Statement parseReferenceStatement(BaseRef ref) throws SyntaxError {
+	Statement parseReferenceStatement(BaseRef ref) throws SyntaxError {
 		parseReferenceExtension(ref);
 		
 		// Reference ( Assign | Invoke ) 
@@ -437,12 +438,12 @@ public class Parser {
 		}
 	}
 	
-	private Expression parseAssign() throws SyntaxError {
+	Expression parseAssign() throws SyntaxError {
 		accept(ASSIGN);
 		return parseExpression();
 	}
 	
-	private ExprList parseInvoke() throws SyntaxError {
+	ExprList parseInvoke() throws SyntaxError {
 		accept(PAREN_OPEN);
 
 		ExprList args = new ExprList();
@@ -462,11 +463,11 @@ public class Parser {
 		};
 	static { Arrays.sort(STARTERS_EXPRESSION); }
 	
-	private Expression parseExpression() throws SyntaxError {
+	Expression parseExpression() throws SyntaxError {
 		return parseDisjunction();
 	}
 	
-	private Expression parseDisjunction() throws SyntaxError {
+	Expression parseDisjunction() throws SyntaxError {
 		Expression res = parseConjunction();
 		while (ct.getKind() == TokenKind.OR) {
 			Operator op = new Operator(acceptIt());
@@ -476,7 +477,7 @@ public class Parser {
 		return res;
 	}
 	
-	private Expression parseConjunction() throws SyntaxError {
+	Expression parseConjunction() throws SyntaxError {
 		Expression res = parseEquality();
 		while (ct.getKind() == TokenKind.AND) {
 			Operator op = new Operator(acceptIt());
@@ -486,7 +487,7 @@ public class Parser {
 		return res;
 	}
 	
-	private Expression parseEquality() throws SyntaxError {
+	Expression parseEquality() throws SyntaxError {
 		Expression res = parseRelational();
 		while (ct.getKind() == TokenKind.EQU || ct.getKind() == TokenKind.NOT_EQU) {
 			Operator op = new Operator(acceptIt());
@@ -496,7 +497,7 @@ public class Parser {
 		return res;
 	}
 	
-	private Expression parseRelational() throws SyntaxError {
+	Expression parseRelational() throws SyntaxError {
 		Expression res = parseAdditive();
 		while (ct.getKind() == TokenKind.LSS || ct.getKind() == TokenKind.LSS_EQU
 				|| ct.getKind() == TokenKind.GTR || ct.getKind() == TokenKind.GTR_EQU) {
@@ -507,7 +508,7 @@ public class Parser {
 		return res;
 	}
 	
-	private Expression parseAdditive() throws SyntaxError {
+	Expression parseAdditive() throws SyntaxError {
 		Expression res = parseMultiplicative();
 		while (ct.getKind() == TokenKind.PLUS || ct.getKind() == TokenKind.MINUS) {
 			Operator op = new Operator(acceptIt());
@@ -517,7 +518,7 @@ public class Parser {
 		return res;
 	}
 	
-	private Expression parseMultiplicative() throws SyntaxError {
+	Expression parseMultiplicative() throws SyntaxError {
 		Expression res = parseValue();
 		while (ct.getKind() == TokenKind.MULT || ct.getKind() == TokenKind.DIV) {
 			Operator op = new Operator(acceptIt());
@@ -527,7 +528,7 @@ public class Parser {
 		return res;
 	}
 	
-	private Expression parseValue() throws SyntaxError {
+	Expression parseValue() throws SyntaxError {
 		Expression exp;
 		switch (ct.getKind()) {
 		case PAREN_OPEN:
