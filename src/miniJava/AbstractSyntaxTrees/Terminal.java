@@ -11,9 +11,9 @@ import miniJava.SyntacticAnalyzer.TokenKind;
 abstract public class Terminal extends AST {
 
   public Terminal (Token t) {
-	super(t.posn);
-    spelling = t.spelling;
-    kind = t.kind;
+	super(t.getStart());
+    spelling = t.getSpelling();
+    kind = t.getKind();
   }
 
   public TokenKind kind;

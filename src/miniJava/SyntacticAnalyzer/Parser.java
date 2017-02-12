@@ -1,7 +1,83 @@
 package miniJava.SyntacticAnalyzer;
 
-import static miniJava.SyntacticAnalyzer.TokenKind.*;
+import static miniJava.SyntacticAnalyzer.TokenKind.ASSIGN;
+import static miniJava.SyntacticAnalyzer.TokenKind.BOOLEAN;
+import static miniJava.SyntacticAnalyzer.TokenKind.CLASS;
+import static miniJava.SyntacticAnalyzer.TokenKind.COMMA;
+import static miniJava.SyntacticAnalyzer.TokenKind.CURL_CLOSE;
+import static miniJava.SyntacticAnalyzer.TokenKind.CURL_OPEN;
+import static miniJava.SyntacticAnalyzer.TokenKind.DOT;
+import static miniJava.SyntacticAnalyzer.TokenKind.ELSE;
+import static miniJava.SyntacticAnalyzer.TokenKind.EOT;
+import static miniJava.SyntacticAnalyzer.TokenKind.FALSE;
+import static miniJava.SyntacticAnalyzer.TokenKind.IDENTIFIER;
+import static miniJava.SyntacticAnalyzer.TokenKind.IF;
+import static miniJava.SyntacticAnalyzer.TokenKind.INT;
+import static miniJava.SyntacticAnalyzer.TokenKind.MINUS;
+import static miniJava.SyntacticAnalyzer.TokenKind.NEW;
+import static miniJava.SyntacticAnalyzer.TokenKind.NOT;
+import static miniJava.SyntacticAnalyzer.TokenKind.NUM;
+import static miniJava.SyntacticAnalyzer.TokenKind.PAREN_CLOSE;
+import static miniJava.SyntacticAnalyzer.TokenKind.PAREN_OPEN;
+import static miniJava.SyntacticAnalyzer.TokenKind.PRIVATE;
+import static miniJava.SyntacticAnalyzer.TokenKind.PUBLIC;
+import static miniJava.SyntacticAnalyzer.TokenKind.RETURN;
+import static miniJava.SyntacticAnalyzer.TokenKind.SEMICOLON;
+import static miniJava.SyntacticAnalyzer.TokenKind.SQR_CLOSE;
+import static miniJava.SyntacticAnalyzer.TokenKind.SQR_OPEN;
+import static miniJava.SyntacticAnalyzer.TokenKind.STATIC;
+import static miniJava.SyntacticAnalyzer.TokenKind.THIS;
+import static miniJava.SyntacticAnalyzer.TokenKind.TRUE;
+import static miniJava.SyntacticAnalyzer.TokenKind.VOID;
+import static miniJava.SyntacticAnalyzer.TokenKind.WHILE;
+
 import java.util.Arrays;
+
+import miniJava.AbstractSyntaxTrees.ArrayType;
+import miniJava.AbstractSyntaxTrees.AssignStmt;
+import miniJava.AbstractSyntaxTrees.BaseRef;
+import miniJava.AbstractSyntaxTrees.BaseType;
+import miniJava.AbstractSyntaxTrees.BinaryExpr;
+import miniJava.AbstractSyntaxTrees.BlockStmt;
+import miniJava.AbstractSyntaxTrees.BooleanLiteral;
+import miniJava.AbstractSyntaxTrees.CallExpr;
+import miniJava.AbstractSyntaxTrees.CallStmt;
+import miniJava.AbstractSyntaxTrees.ClassDecl;
+import miniJava.AbstractSyntaxTrees.ClassDeclList;
+import miniJava.AbstractSyntaxTrees.ClassType;
+import miniJava.AbstractSyntaxTrees.ExprList;
+import miniJava.AbstractSyntaxTrees.Expression;
+import miniJava.AbstractSyntaxTrees.FieldDecl;
+import miniJava.AbstractSyntaxTrees.FieldDeclList;
+import miniJava.AbstractSyntaxTrees.IdRef;
+import miniJava.AbstractSyntaxTrees.Identifier;
+import miniJava.AbstractSyntaxTrees.IfStmt;
+import miniJava.AbstractSyntaxTrees.IntLiteral;
+import miniJava.AbstractSyntaxTrees.IxIdRef;
+import miniJava.AbstractSyntaxTrees.IxQRef;
+import miniJava.AbstractSyntaxTrees.LiteralExpr;
+import miniJava.AbstractSyntaxTrees.MemberDecl;
+import miniJava.AbstractSyntaxTrees.MethodDecl;
+import miniJava.AbstractSyntaxTrees.MethodDeclList;
+import miniJava.AbstractSyntaxTrees.NewArrayExpr;
+import miniJava.AbstractSyntaxTrees.NewObjectExpr;
+import miniJava.AbstractSyntaxTrees.Operator;
+import miniJava.AbstractSyntaxTrees.Package;
+import miniJava.AbstractSyntaxTrees.ParameterDecl;
+import miniJava.AbstractSyntaxTrees.ParameterDeclList;
+import miniJava.AbstractSyntaxTrees.QRef;
+import miniJava.AbstractSyntaxTrees.RefExpr;
+import miniJava.AbstractSyntaxTrees.Reference;
+import miniJava.AbstractSyntaxTrees.ReturnStmt;
+import miniJava.AbstractSyntaxTrees.Statement;
+import miniJava.AbstractSyntaxTrees.StatementList;
+import miniJava.AbstractSyntaxTrees.ThisRef;
+import miniJava.AbstractSyntaxTrees.TypeDenoter;
+import miniJava.AbstractSyntaxTrees.TypeKind;
+import miniJava.AbstractSyntaxTrees.UnaryExpr;
+import miniJava.AbstractSyntaxTrees.VarDecl;
+import miniJava.AbstractSyntaxTrees.VarDeclStmt;
+import miniJava.AbstractSyntaxTrees.WhileStmt;
 
 public class Parser {
 	private Scanner lexer;
@@ -11,26 +87,29 @@ public class Parser {
 		this.lexer = lexer;
 	}
 
-	private void acceptIt() {
+	private Token acceptIt() {
+		Token res = ct;
 		ct = this.lexer.scan();
+		return res;
 	}
 
-	private void accept(TokenKind expected) throws SyntaxError {
-		if (ct.getKind() == expected) acceptIt();
+	private Token accept(TokenKind expected) throws SyntaxError {
+		if (ct.getKind() == expected) return acceptIt();
 		else throw new SyntaxError(lexer.getSourceFile(), expected, ct);
 	}
 	
-	public boolean parseProgram() {
+	public Package parseProgram() {
 		return parseProgram(true);
 	}
 
-	public boolean parseProgram(boolean print_stacktrace) {
+	public Package parseProgram(boolean print_stacktrace) {
 		// Load first token
-		this.ct = this.lexer.scan();
+		Token first = this.ct = this.lexer.scan();
 
+		ClassDeclList classes = new ClassDeclList();
 		try {
 			while (ct.getKind() == CLASS) {
-				parseClassDec();
+				classes.add(parseClassDec());
 			}
 
 			if (ct.getKind() != EOT) {
@@ -39,156 +118,212 @@ public class Parser {
 		} catch (SyntaxError e) {
 			if (print_stacktrace) e.printStackTrace();
 			else System.err.println(e.getMessage());
-			return false;
+			return null;
 		}
 		
-		return true;
+		return new Package(classes, first.getStart());
 	}
 
-	private void parseClassDec() throws SyntaxError {
+	private ClassDecl parseClassDec() throws SyntaxError {
 		accept(CLASS);
-		accept(IDENTIFIER);
+		Token cn = accept(IDENTIFIER);
 		accept(CURL_OPEN);
+		
+		FieldDeclList fields = new FieldDeclList();
+		MethodDeclList methods = new MethodDeclList();
 		
 		// While look ahead is in starters[[Declare]]
 		TokenKind k = ct.getKind();
 		while (k == PUBLIC || k == PRIVATE || k == STATIC || k == VOID 
 				|| k == INT || k == BOOLEAN || k == IDENTIFIER) {
-			parseDeclare();
+			MemberDecl member = parseDeclare();
+			if (member instanceof FieldDecl) fields.add((FieldDecl) member);
+			else if (member instanceof MethodDecl) methods.add((MethodDecl) member);
+			else throw new RuntimeException("Unknown MemberDecl type: " + member.getClass());
+			
 			k = ct.getKind();
 		}
 		
 		accept(CURL_CLOSE);
+		
+		return new ClassDecl(cn.getSpelling(), fields, methods, cn.getStart());
 	}
 	
-	private void parseDeclare() throws SyntaxError {
+	private MemberDecl parseDeclare() throws SyntaxError {
 		// Visibility
-		if (ct.getKind() == PUBLIC || ct.getKind() == PRIVATE) acceptIt();
+		boolean isPrivate = false;
+		if (ct.getKind() == PUBLIC || ct.getKind() == PRIVATE) {
+			isPrivate = (ct.getKind() == PRIVATE);
+			acceptIt();
+		}
 		
 		// Access
-		if (ct.getKind() == STATIC) acceptIt();
+		boolean isStatic = false;
+		if (ct.getKind() == STATIC) {
+			isStatic = true;
+			acceptIt();
+		}
 		
-		if (ct.getKind() == VOID) parseVoidMethod();
-		else parseTypedDeclare();
-	}
-	
-	private void parseTypedDeclare() throws SyntaxError { 
-		parseType();
-		accept(IDENTIFIER);
+		Token id;
+		TypeDenoter type;
+		if (ct.getKind() == VOID) {
+			Token void_token = accept(VOID);			
+			id = accept(IDENTIFIER);
+			
+			type = new BaseType(TypeKind.VOID, void_token.getStart());
+		} else {
+			type = parseType();
+			id = accept(IDENTIFIER);
+		}
 		
-		if (ct.getKind() == SEMICOLON) acceptIt();
-		else parseMethodContent();
+		FieldDecl field = new FieldDecl(isPrivate, isStatic, type, id.getSpelling(), id.getStart());
+		if (ct.getKind() == SEMICOLON) {
+			acceptIt();
+			return field;
+		} else {
+			return parseMethodContent(field);
+		}
 	}
 	
-	private void parseVoidMethod() throws SyntaxError {
-		accept(VOID);
-		accept(IDENTIFIER);
-		parseMethodContent();
-	}
-	
-	private void parseMethodContent() throws SyntaxError {
+	private MethodDecl parseMethodContent(FieldDecl field) throws SyntaxError {
 		accept(PAREN_OPEN);
 		
+		ParameterDeclList pl;
 		if (ct.getKind() == PAREN_CLOSE) {
+			pl = new ParameterDeclList();
 			acceptIt();
 		} else {
-			parseParamList();
+			pl = parseParamList();
 			accept(PAREN_CLOSE);
 		}
 		
 		accept(CURL_OPEN);
 		
 		// While look ahead is in starters[[Statement]]
+		StatementList sl = new StatementList();
 		while (Arrays.binarySearch(STARTERS_STATEMENT, ct.getKind()) >= 0) {
-			parseStatement();
+			sl.add(parseStatement());
 		}
 		
 		accept(CURL_CLOSE);
+		
+		return new MethodDecl(field, pl, sl, field.posn);
 	}
 	
-	private void parseType() throws SyntaxError {
+	private TypeDenoter parseType() throws SyntaxError {
 		switch (ct.getKind()) {
 		case IDENTIFIER:
-			parseIdType();
-			break;
+			return parseIdType();
 		case INT: case BOOLEAN:
-			parsePrimativeType();
-			break;
+			return parsePrimativeType();
 		default:
 			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, IDENTIFIER, BOOLEAN }, ct);
 		}
 	}
 	
-	private void parsePrimativeType() throws SyntaxError {
+	private TypeDenoter parsePrimativeType() throws SyntaxError {
+		TypeDenoter type;
 		switch (ct.getKind()) {
 		case INT:
-			acceptIt();
+			Token int_token = acceptIt();
+			type = new BaseType(TypeKind.INT, int_token.getStart());
 			if (ct.getKind() == SQR_OPEN) {
 				accept(SQR_OPEN);
 				accept(SQR_CLOSE);
+				type = new ArrayType(type, int_token.getStart());
 			}
 			break;
 		case BOOLEAN:
-			acceptIt();
+			Token bool_token = acceptIt();
+			type = new BaseType(TypeKind.BOOLEAN, bool_token.getStart());
 			break;
 		default:
 			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, BOOLEAN }, ct);
 		}
+		
+		return type;
 	}
 	
-	private void parseIdType() throws SyntaxError {
-		accept(IDENTIFIER);
+	private TypeDenoter parseIdType() throws SyntaxError {
+		Identifier id = new Identifier(accept(IDENTIFIER));
+		TypeDenoter type = new ClassType(id, id.posn);
 		if (ct.getKind() == SQR_OPEN) {
 			accept(SQR_OPEN);
 			accept(SQR_CLOSE);
+			type = new ArrayType(type, type.posn);
 		}
+		
+		return type;
 	}
 	
-	private void parseParamList() throws SyntaxError {
-		parseType();
-		accept(IDENTIFIER);
+	private ParameterDeclList parseParamList() throws SyntaxError {
+		ParameterDeclList pl = new ParameterDeclList();
+		
+		TypeDenoter type = parseType();
+		Token id = accept(IDENTIFIER);
+		pl.add(new ParameterDecl(type, id.getSpelling(), id.getStart()));
 		
 		while (ct.getKind() == COMMA) {
 			accept(COMMA);
-			parseType();
-			accept(IDENTIFIER);
+			
+			type = parseType();
+			id = accept(IDENTIFIER);
+			pl.add(new ParameterDecl(type, id.getSpelling(), id.getStart()));
 		}
+		
+		return pl;
 	}
 	
-	private void parseArgList() throws SyntaxError {
-		parseExpression();
+	private ExprList parseArgList() throws SyntaxError {
+		ExprList list = new ExprList();
 		
+		list.add(parseExpression());
 		while (ct.getKind() == COMMA) {
 			accept(COMMA);
-			parseExpression();
+			list.add(parseExpression());
 		}
+		
+		return list;
 	}
 	
-	private void parseReference() throws SyntaxError {
-		Token first_identifier = ct;
+	private Reference parseReference() throws SyntaxError {
+		BaseRef ref;
 		if (ct.getKind() == THIS) {
-			acceptIt();
+			Token this_token = acceptIt();
+			ref = new ThisRef(this_token.getStart());
 		} else {
-			accept(IDENTIFIER);
-			if (ct.getKind() == SQR_OPEN)
-				parseIndexing();
+			Identifier id = new Identifier(accept(IDENTIFIER));
+			if (ct.getKind() == SQR_OPEN) {
+				Expression exp = parseIndexing();
+				ref = new IxIdRef(id, exp, id.posn);
+			} else {
+				ref = new IdRef(id, id.posn);
+			}
 		}
 		
-		parseReferenceExtension();
+		return parseReferenceExtension(ref);
 	}	
-	private void parseReferenceExtension() throws SyntaxError {
+	private Reference parseReferenceExtension(Reference ref) throws SyntaxError {
 		while(ct.getKind() == DOT) {
 			acceptIt();
-			accept(IDENTIFIER);
-			if (ct.getKind() == SQR_OPEN)
-				parseIndexing();
+			Identifier id = new Identifier(accept(IDENTIFIER));
+			if (ct.getKind() == SQR_OPEN) {
+				Expression exp = parseIndexing();
+				ref = new IxQRef(ref, id, exp, id.posn);
+			} else {
+				ref = new QRef(ref, id, id.posn);
+			}
 		}
+		
+		return ref;
 	}
 	
-	private void parseIndexing() throws SyntaxError {
+	private Expression parseIndexing() throws SyntaxError {
 		accept(SQR_OPEN);
-		parseExpression();
+		Expression exp = parseExpression();
 		accept(SQR_CLOSE);
+		
+		return exp;
 	}
 	
 	// Kinda helps with organization, overhead might not be worth it
@@ -197,102 +332,126 @@ public class Parser {
 		};
 	static { Arrays.sort(STARTERS_STATEMENT); }
 	
-	private void parseStatement() throws SyntaxError {
+	private Statement parseStatement() throws SyntaxError {
+		Token start_token;
 		switch (ct.getKind()) {
 		case CURL_OPEN:
-			acceptIt();
+			start_token = acceptIt();
+			StatementList list = new StatementList();
 			while (Arrays.binarySearch(STARTERS_STATEMENT, ct.getKind()) >= 0)
-				parseStatement();
+				list.add(parseStatement());
 			accept(CURL_CLOSE);
-			break;
+			
+			return new BlockStmt(list, start_token.getStart());
 		case RETURN:
-			acceptIt();
+			start_token = acceptIt();
+			Expression return_exp = null;
 			if (Arrays.binarySearch(STARTERS_EXPRESSION, ct.getKind()) >= 0)
-				parseExpression();
+				return_exp = parseExpression();
 			accept(SEMICOLON);
-			break;
+			
+			return new ReturnStmt(return_exp, start_token.getStart());
 		case IF:
-			acceptIt();
+			start_token = acceptIt();
 			accept(PAREN_OPEN);
-			parseExpression();
+			Expression if_cond = parseExpression();
 			accept(PAREN_CLOSE);
-			parseStatement();
+			Statement if_then = parseStatement();
+			Statement if_else = null;
 			if (ct.getKind() == ELSE) {
 				acceptIt();
-				parseStatement();
+				if_else = parseStatement();
 			}
-			break;
+			
+			return new IfStmt(if_cond, if_then, if_else, start_token.getStart());
 		case WHILE:
-			acceptIt();
+			start_token = acceptIt();
 			accept(PAREN_OPEN);
-			parseExpression();
+			Expression while_cond = parseExpression();
 			accept(PAREN_CLOSE);
-			parseStatement();
-			break;
+			Statement while_body = parseStatement();
+			
+			return new WhileStmt(while_cond, while_body, start_token.getStart());
 		case INT: case BOOLEAN:
-			parsePrimativeType();
-			accept(IDENTIFIER);
-			parseAssign();
+			TypeDenoter prim_type = parsePrimativeType();
+			Token prim_var_id = accept(IDENTIFIER);
+			Expression prim_var_exp = parseAssign();
 			accept(SEMICOLON);
-			break;
+			
+			return new VarDeclStmt(new VarDecl(prim_type, prim_var_id.getSpelling(), prim_type.posn), prim_var_exp, prim_type.posn);
 		case IDENTIFIER:
-			// Token first_id = ct;
-			acceptIt();
+			Statement id_stmt = null;
+			Identifier id1 = new Identifier(accept(IDENTIFIER));
 			if (ct.getKind() == SQR_OPEN) {
 				// Array. Could still either be: TypeId id Define | Reference ( Assign | Invoke )
 				accept(SQR_OPEN);
 				if (Arrays.binarySearch(STARTERS_EXPRESSION, ct.getKind()) >= 0) {
 					// If there is an Expression in square brackets, it's: Reference ( Assign | Invoke )
-					parseExpression();
+					Expression ix_expr = parseExpression();
 					accept(SQR_CLOSE);
-					parseReferenceStatement();
+					
+					id_stmt = parseReferenceStatement(new IxIdRef(id1, ix_expr, id1.posn));
 				} else {
 					// Otherwise just an array type: TypeId id Define
 					accept(SQR_CLOSE);
-					accept(IDENTIFIER);
-					parseAssign();
+					Token id2 = accept(IDENTIFIER);
+					
+					Expression value_expr = parseAssign();
+					id_stmt = new VarDeclStmt(new VarDecl(new ArrayType(new ClassType(id1, id1.posn), id1.posn), id2.getSpelling(), id1.posn), value_expr, id1.posn);
 				}
 			} else if (ct.getKind() == IDENTIFIER) {
 				// Got "id id", must be: IdType id Assign
-				accept(IDENTIFIER);
-				parseAssign();
+				Token id2 = accept(IDENTIFIER);
+				Expression value_expr = parseAssign();
+				id_stmt = new VarDeclStmt(new VarDecl(new ClassType(id1, id1.posn), id2.getSpelling(), id1.posn), value_expr, id1.posn);
 			} else {
 				// Only other thing it could be is a Reference
-				parseReferenceStatement();
+				id_stmt = parseReferenceStatement(new IdRef(id1, id1.posn));
 			}
 			accept(SEMICOLON);
-			break;
+			
+			return id_stmt;
 		case THIS: // TODO We are modifying this - allowed in original grammar, but seems illegal?
-			parseReference();
-			if (ct.getKind() == ASSIGN) parseAssign();
-			else if (ct.getKind() == PAREN_OPEN) parseInvoke();
-			else throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { ASSIGN, PAREN_OPEN }, ct);
+			Token this_token = accept(THIS);
+			id_stmt = parseReferenceStatement(new ThisRef(this_token.getStart()));
 			accept(SEMICOLON);
-			break;
+			
+			return id_stmt;
 		default:
 			throw new SyntaxError(lexer.getSourceFile(), STARTERS_STATEMENT, ct);
 		}
 	}
 	
-	private void parseReferenceStatement() throws SyntaxError {
-		parseReferenceExtension();
+	private Statement parseReferenceStatement(BaseRef ref) throws SyntaxError {
+		parseReferenceExtension(ref);
 		
 		// Reference ( Assign | Invoke ) 
-		if (ct.getKind() == ASSIGN) parseAssign();
-		else if (ct.getKind() == PAREN_OPEN) parseInvoke();
-		else throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { DOT, ASSIGN, PAREN_OPEN }, ct);
+		if (ct.getKind() == ASSIGN) {
+			Expression expr = parseAssign();
+			return new AssignStmt(ref, expr, ref.posn);
+		} else if (ct.getKind() == PAREN_OPEN) {
+			ExprList args = parseInvoke();
+			return new CallStmt(ref, args, ref.posn);
+		} else {
+			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { DOT, ASSIGN, PAREN_OPEN }, ct);
+		}
 	}
 	
-	private void parseAssign() throws SyntaxError {
+	private Expression parseAssign() throws SyntaxError {
 		accept(ASSIGN);
-		parseExpression();
+		return parseExpression();
 	}
 	
-	private void parseInvoke() throws SyntaxError {
+	private ExprList parseInvoke() throws SyntaxError {
 		accept(PAREN_OPEN);
+
+		ExprList args = new ExprList();
 		if (Arrays.binarySearch(STARTERS_EXPRESSION, ct.getKind()) >= 0)
-			parseArgList();
+			args = parseArgList();
+		
 		accept(PAREN_CLOSE);
+		
+		return args;
 	}
 	
 	// Kinda helps with organization, overhead might not be worth it
@@ -303,102 +462,121 @@ public class Parser {
 		};
 	static { Arrays.sort(STARTERS_EXPRESSION); }
 	
-	private void parseExpression() throws SyntaxError {
-		parseDisjunction();
+	private Expression parseExpression() throws SyntaxError {
+		return parseDisjunction();
 	}
 	
-	private void parseDisjunction() throws SyntaxError {
-		parseConjunction();
+	private Expression parseDisjunction() throws SyntaxError {
+		Expression res = parseConjunction();
 		while (ct.getKind() == TokenKind.OR) {
-			acceptIt();
-			parseConjunction();
+			Operator op = new Operator(acceptIt());
+			res = new BinaryExpr(op, res, parseConjunction(), res.posn);
 		}
+		
+		return res;
 	}
 	
-	private void parseConjunction() throws SyntaxError {
-		parseEquality();
+	private Expression parseConjunction() throws SyntaxError {
+		Expression res = parseEquality();
 		while (ct.getKind() == TokenKind.AND) {
-			acceptIt();
-			parseEquality();
+			Operator op = new Operator(acceptIt());
+			res = new BinaryExpr(op, res, parseEquality(), res.posn);
 		}
+
+		return res;
 	}
 	
-	private void parseEquality() throws SyntaxError {
-		parseRelational();
+	private Expression parseEquality() throws SyntaxError {
+		Expression res = parseRelational();
 		while (ct.getKind() == TokenKind.EQU || ct.getKind() == TokenKind.NOT_EQU) {
-			acceptIt();
-			parseRelational();
+			Operator op = new Operator(acceptIt());
+			res = new BinaryExpr(op, res, parseRelational(), res.posn);
 		}
+
+		return res;
 	}
 	
-	private void parseRelational() throws SyntaxError {
-		parseAdditive();
+	private Expression parseRelational() throws SyntaxError {
+		Expression res = parseAdditive();
 		while (ct.getKind() == TokenKind.LSS || ct.getKind() == TokenKind.LSS_EQU
 				|| ct.getKind() == TokenKind.GTR || ct.getKind() == TokenKind.GTR_EQU) {
-			acceptIt();
-			parseAdditive();
+			Operator op = new Operator(acceptIt());
+			res = new BinaryExpr(op, res, parseAdditive(), res.posn);
 		}
+
+		return res;
 	}
 	
-	private void parseAdditive() throws SyntaxError {
-		parseMultiplicative();
+	private Expression parseAdditive() throws SyntaxError {
+		Expression res = parseMultiplicative();
 		while (ct.getKind() == TokenKind.PLUS || ct.getKind() == TokenKind.MINUS) {
-			acceptIt();
-			parseMultiplicative();
+			Operator op = new Operator(acceptIt());
+			res = new BinaryExpr(op, res, parseMultiplicative(), res.posn);
 		}
+
+		return res;
 	}
 	
-	private void parseMultiplicative() throws SyntaxError {
-		parseValue();
+	private Expression parseMultiplicative() throws SyntaxError {
+		Expression res = parseValue();
 		while (ct.getKind() == TokenKind.MULT || ct.getKind() == TokenKind.DIV) {
-			acceptIt();
-			parseValue();
+			Operator op = new Operator(acceptIt());
+			res = new BinaryExpr(op, res, parseValue(), res.posn);
 		}
+		
+		return res;
 	}
 	
-	private void parseValue() throws SyntaxError {
+	private Expression parseValue() throws SyntaxError {
+		Expression exp;
 		switch (ct.getKind()) {
 		case PAREN_OPEN:
-			acceptIt();
-			parseExpression();
+			accept(PAREN_OPEN);
+			exp = parseExpression();
 			accept(PAREN_CLOSE);
-			break;
-		case NUM: case TRUE: case FALSE:
-			acceptIt();
-			break;
+			return exp;
+		case NUM:
+			Token int_lit = acceptIt();
+			return new LiteralExpr(new IntLiteral(int_lit), int_lit.getStart());
+		case TRUE: case FALSE:
+			Token bool_lit = acceptIt();
+			return new LiteralExpr(new BooleanLiteral(bool_lit), bool_lit.getStart());
 		case NEW:
-			acceptIt();
+			Token first_token = acceptIt();
 			if (ct.getKind() == IDENTIFIER) {
 				// Object or object array
-				acceptIt();
+				Identifier type_id = new Identifier(accept(IDENTIFIER));
+				ClassType type = new ClassType(type_id, type_id.posn);
 				if (ct.getKind() == PAREN_OPEN) {
 					accept(PAREN_OPEN);
 					accept(PAREN_CLOSE);
-				} else if (ct.getKind() == SQR_OPEN) {
-					parseIndexing();
+					exp = new NewObjectExpr(type, first_token.getStart());
+				} else {
+					Expression ix_exp = parseIndexing();
+					exp = new NewArrayExpr(new ArrayType(type, type.posn), ix_exp, first_token.getStart());
 				}
 			} else {
 				// Primitive array
-				accept(INT);
-				if (ct.getKind() == SQR_OPEN) parseIndexing();
+				Token int_token = accept(INT);
+				
+				ArrayType int_arr_type = new ArrayType(new BaseType(TypeKind.INT, int_token.getStart()), int_token.getStart());
+				Expression ix_exp = parseIndexing();
+				exp = new NewArrayExpr(int_arr_type, ix_exp, first_token.getStart());
 			}
-			break;
+			return exp;
 		case NOT: case MINUS: // unop
-			acceptIt();
-			parseValue();
-			break;
+			Operator op = new Operator(acceptIt());
+			Expression value = parseValue();
+			return new UnaryExpr(op, value, op.posn);
 		default:
-			parseReference();
+			Reference ref = parseReference();
 			if (ct.getKind() == PAREN_OPEN) {
 				// Function call
-				parseInvoke();
+				ExprList exprs = parseInvoke();
+				return new CallExpr(ref, exprs, ref.posn);
+			} else {
+				return new RefExpr(ref, ref.posn);
 			}
-			break;
 		}
-	}
-	
-	private boolean isBinOp(TokenKind k) {
-		return k == GTR || k == LSS || k == EQU || k == LSS_EQU || k == GTR_EQU || k == NOT_EQU
-				|| k == AND || k == OR || k == NOT || k == PLUS || k == MINUS || k == MULT || k == DIV;
 	}
 }

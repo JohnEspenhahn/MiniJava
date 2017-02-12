@@ -207,7 +207,7 @@ public class ParserTest {
 		Scanner s = new Scanner(new SourceStream(new ByteArrayInputStream(in.getBytes())));
 		Parser p = new Parser(s);
 		
-		assertEquals(ok, p.parseProgram(false));
+		assertEquals(ok, p.parseProgram(false) != null);
 	}
 
 	enum WrapperType {

@@ -23,7 +23,7 @@ public class Compiler {
 		
 		try {
 			Parser p = new Parser(new Scanner(new SourceFile(f)));
-			if (p.parseProgram(false)) System.exit(0);
+			if (p.parseProgram(false) == null) System.exit(0);
 			else System.exit(4);
 		} catch (IOException e) {
 			e.printStackTrace();
