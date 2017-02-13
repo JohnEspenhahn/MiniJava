@@ -55,6 +55,7 @@ public class ParserTest {
 		checkParse("int[] i;", WrapperType.CLASS, true);
 		checkParse("boolean i;", WrapperType.CLASS, true);
 		checkParse("Type i;", WrapperType.CLASS, true);
+		checkParse("void i;", WrapperType.CLASS, false);
 		// PARAM LIST
 		checkParse("void function(int id1, boolean id2, String id3) {}", WrapperType.CLASS, true);
 		checkParse("Type func(int a) {}", WrapperType.CLASS, true);
