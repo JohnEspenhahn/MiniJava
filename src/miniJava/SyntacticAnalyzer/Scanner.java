@@ -31,7 +31,7 @@ public class Scanner {
 		
 		Token t = new Token(kind, currentSpelling.toString(), start, src.getCurrentPosition());
 		this.currentSpelling = new StringBuffer();
-		System.out.println(t);
+		// System.out.println(t);
 		
 		return t;
 	}
@@ -89,8 +89,7 @@ public class Scanner {
 			if (cc == '*') {
 				// Comment block (clear taken '/')
 				currentSpelling = new StringBuffer();
-				skipCommentBlock();
-				return null;
+				return skipCommentBlock();
 			} else if (cc == '/') {
 				// Comment line (clear taken '/')
 				currentSpelling = new StringBuffer();
@@ -164,17 +163,22 @@ public class Scanner {
 		cc = src.getNext();
 	}
 	
-	private void skipCommentBlock() {
-		while (cc != SourceFile.eot) {
+	private TokenKind skipCommentBlock() {
+		boolean matched = false;
+		while (cc != SourceFile.eot && !matched) {
 			skipIt();
-			if (cc == '*') {
+			while (cc == '*') {
 				skipIt();
 				if (cc == '/') {
 					skipIt();
-					return;
+					matched = true;
+					break;
 				}
 			}
 		}
+		
+		if (!matched) return TokenKind.ERROR;
+		else return null; // Was safe to skip
 	}
 	
 	private void skipCommentLine() {

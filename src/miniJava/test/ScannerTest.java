@@ -71,6 +71,7 @@ public class ScannerTest {
 		// COMMENT
 		checkScan("1 // sdlkf j;askdjf a;lksjfdlk sajdlkf", new TokenKind[] { NUM });
 		checkScan("1 /* askdfj lasjfd lkasjfd kajsd;f */ 2 ^ 2", new TokenKind[] { NUM, NUM, ERROR });
+		checkScan("1 /* kasdlkjf sa", new TokenKind[] { NUM, ERROR });
 		
 		// INVALID SCAN
 		checkScan(":", new TokenKind[] { ERROR });
