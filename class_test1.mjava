@@ -1,0 +1,10 @@
+class C1 {
+	public static String[] args;
+	private int p1;
+	
+	public static void main(String[] args) {}
+	
+	private String f1() {}
+	
+	private static String[] f2(boolean b) {}
+}
