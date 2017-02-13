@@ -423,8 +423,8 @@ public class Parser {
 		}
 	}
 	
-	Statement parseReferenceStatement(BaseRef ref) throws SyntaxError {
-		parseReferenceExtension(ref);
+	Statement parseReferenceStatement(BaseRef base_ref) throws SyntaxError {
+		Reference ref = parseReferenceExtension(base_ref);
 		
 		// Reference ( Assign | Invoke ) 
 		if (ct.getKind() == ASSIGN) {
