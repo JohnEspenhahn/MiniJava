@@ -22,6 +22,7 @@ public class ParserTest {
 		checkParse("class c { int t^ = 1; }", WrapperType.NONE, false);
 		// FIELD DECLARATION
 		checkParse("public static int log_id_123_a;", WrapperType.CLASS, true);
+		checkParse("public static void String[] args;", WrapperType.CLASS, false);
 		// METHOD DECLARATION
 		checkParse("public void function1(int P1, String p2) { }", WrapperType.CLASS, true);
 		checkParse("public f1() { }", WrapperType.CLASS, false);
@@ -128,6 +129,13 @@ public class ParserTest {
 		checkParse("this.c[b.d.f[1].a].k = 1;", WrapperType.FUNCTION, true);
 		checkParse("this = 1", WrapperType.FUNCTION, false);
 		checkParse("this();", WrapperType.FUNCTION, true);
+		checkParse("this[];", WrapperType.FUNCTION, false);
+		checkParse("this[1];", WrapperType.FUNCTION, false);
+		checkParse("this[1]();", WrapperType.FUNCTION, false);
+		checkParse("a[1]();", WrapperType.FUNCTION, true);
+		checkParse("this[1] = 1;", WrapperType.FUNCTION, false);
+		checkParse("this[] = new int[2];", WrapperType.FUNCTION, false);
+		checkParse("this[] = new int[];", WrapperType.FUNCTION, false);
 		checkParse("this.foo();", WrapperType.FUNCTION, true);
 		checkParse("bar.foo();", WrapperType.FUNCTION, true);
 		checkParse("this()", WrapperType.FUNCTION, false);
