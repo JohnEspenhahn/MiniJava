@@ -166,23 +166,23 @@ public class Parser {
 		}
 		
 		Token id;
-		TypeDenoter type;
 		if (ct.getKind() == VOID) {
 			Token void_token = accept(VOID);			
 			id = accept(IDENTIFIER);
 			
-			type = new BaseType(TypeKind.VOID, void_token.getStart());
+			TypeDenoter void_type = new BaseType(TypeKind.VOID, void_token.getStart());
+			return parseMethodContent(new FieldDecl(isPrivate, isStatic, void_type, id.getSpelling(), id.getStart()));
 		} else {
-			type = parseType();
+			TypeDenoter type = parseType();
 			id = accept(IDENTIFIER);
-		}
-		
-		FieldDecl field = new FieldDecl(isPrivate, isStatic, type, id.getSpelling(), id.getStart());
-		if (ct.getKind() == SEMICOLON) {
-			acceptIt();
-			return field;
-		} else {
-			return parseMethodContent(field);
+			
+			FieldDecl field = new FieldDecl(isPrivate, isStatic, type, id.getSpelling(), id.getStart());
+			if (ct.getKind() == SEMICOLON) {
+				acceptIt();
+				return field;
+			} else {
+				return parseMethodContent(field);
+			}
 		}
 	}
 	
