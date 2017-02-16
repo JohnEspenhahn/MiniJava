@@ -68,7 +68,7 @@ public class ASTGenTester {
 	
 	@Test
 	public void testParseClassDec() throws SyntaxError, FileNotFoundException {
-		astCheck(makeParser(new File("class_test1.mjava")).parseClassDec(),
+		astCheck(makeParser(new File("tests/class_test1.mjava")).parseClassDec(),
 				new ClassDecl("C1",
 						fieldList(
 								new FieldDecl(false, true, new ArrayType(new ClassType(id("String"))), "args"),
@@ -90,8 +90,6 @@ public class ASTGenTester {
 								)
 						)
 				));
-		
-		
 	}
 
 	@Test

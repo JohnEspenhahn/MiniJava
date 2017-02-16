@@ -16,6 +16,7 @@ public class Compiler {
 		}
 		
 		File f = new File(args[0]);
+		// File f = new File("pass151.java");
 		if (!f.exists()) {
 			System.err.println("No file called '" + args[0] + "' could be found!");
 			System.exit(1);
