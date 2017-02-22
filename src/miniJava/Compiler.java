@@ -3,6 +3,7 @@ package miniJava;
 import java.io.File;
 import java.io.IOException;
 
+import miniJava.AbstractSyntaxTrees.ASTDisplay;
 import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
 import miniJava.SyntacticAnalyzer.SourceFile;
@@ -24,8 +25,13 @@ public class Compiler {
 		
 		try {
 			Parser p = new Parser(new Scanner(new SourceFile(f)));
-			if (p.parseProgram(false) == null) System.exit(0);
-			else System.exit(4);
+			miniJava.AbstractSyntaxTrees.Package pck = p.parseProgram(false);
+			if (pck == null) {
+				System.exit(4);
+			} else {
+				new ASTDisplay().showTree(pck);
+				System.exit(0);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("An IOException occured!");

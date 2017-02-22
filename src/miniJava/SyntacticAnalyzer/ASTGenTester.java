@@ -181,6 +181,9 @@ public class ASTGenTester {
 		astCheck(makeParser("String[] i = 0;").parseStatement(), 
 				new VarDeclStmt(new VarDecl(new ArrayType(new ClassType(id("String"))), "i"), lit(0)));
 		
+		astCheck(makeParser("String[] i = a;").parseStatement(), 
+				new VarDeclStmt(new VarDecl(new ArrayType(new ClassType(id("String"))), "i"), new RefExpr(new IdRef(id("a")))));
+		
 		astCheck(makeParser("i = 0;").parseStatement(), 
 				new AssignStmt(new IdRef(id("i")), lit(0)));
 		
@@ -205,6 +208,9 @@ public class ASTGenTester {
 		astCheck(makeParser("this = 0;").parseStatement(),
 				new AssignStmt(new ThisRef(), lit(0)));
 		
+		astCheck(makeParser("C c = new C();").parseStatement(),
+				new VarDeclStmt(new VarDecl(new ClassType(id("C")), "c"), new NewObjectExpr(new ClassType(id("C")))));
+		
 		astCheck(makeParser("this.x = 0;").parseStatement(),
 				new AssignStmt(new QRef(new ThisRef(), id("x")), lit(0)));
 				
@@ -220,11 +226,17 @@ public class ASTGenTester {
 		astCheck(makeParser("a.b(1, 2);").parseStatement(),
 				new CallStmt(new QRef(new IdRef(id("a")), id("b")), exprList(lit(1), lit(2))));
 		
+		astCheck(makeParser("this.b(1, 2);").parseStatement(),
+				new CallStmt(new QRef(new ThisRef(), id("b")), exprList(lit(1), lit(2))));
+		
 		astCheck(makeParser("a.c[b](1, 2);").parseStatement(),
 				new CallStmt(new IxQRef(new IdRef(id("a")), id("c"), new RefExpr(new IdRef(id("b")))), exprList(lit(1), lit(2))));
 		
 		astCheck(makeParser("a[1](1, 2);").parseStatement(),
 				new CallStmt(new IxIdRef(id("a"), lit(1)), exprList(lit(1), lit(2))));
+		
+		astCheck(makeParser("this.that.those[3] = them;").parseStatement(),
+				new AssignStmt(new IxQRef(new QRef(new ThisRef(), id("that")), id("those"), lit(3)), new RefExpr(new IdRef(id("them")))));
 	}
 
 	@Test

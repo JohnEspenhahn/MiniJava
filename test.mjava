@@ -1,16 +1,9 @@
-class TestClass {
+class PA2sample {
 
-	public String message;
-	
-	public static void main(String[] args) {
-		int a_num = 1+5--2;
-		if (args[0] == a_num) a_num = (a_num * a_num) / -2;
-		else a_num = a_num / 2;
-		
-		// Test of a comment
-valid_statement b /* = 1 */ = 2;
-		
-		System.out[5].println(message + 
-	}
-
+    public boolean c;
+  
+    public static void main(String[] args){
+        if (true)
+            a[b].n = 1 + 2 * x;
+    }
 }
