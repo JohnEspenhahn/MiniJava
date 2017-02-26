@@ -356,10 +356,10 @@ public class ASTGenTester {
 				new NewObjectExpr(new ClassType(id("String"))));
 		
 		astCheck(makeParser("new int[5]").parseValue(),
-				new NewArrayExpr(new ArrayType(new BaseType(TypeKind.INT)), lit(5)));
+				new NewArrayExpr(new BaseType(TypeKind.INT), lit(5)));
 		
 		astCheck(makeParser("new String[5]").parseValue(),
-				new NewArrayExpr(new ArrayType(new ClassType(id("String"))), lit(5)));
+				new NewArrayExpr(new ClassType(id("String")), lit(5)));
 	}
 	
 	private Parser makeParser(File f) throws FileNotFoundException {

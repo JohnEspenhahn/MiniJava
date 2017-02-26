@@ -554,13 +554,13 @@ public class Parser {
 					exp = new NewObjectExpr(type, first_token.getStart());
 				} else {
 					Expression ix_exp = parseIndexing();
-					exp = new NewArrayExpr(new ArrayType(type, type.posn), ix_exp, first_token.getStart());
+					exp = new NewArrayExpr(type, ix_exp, first_token.getStart());
 				}
 			} else {
 				// Primitive array
 				Token int_token = accept(INT);
 				
-				ArrayType int_arr_type = new ArrayType(new BaseType(TypeKind.INT, int_token.getStart()), int_token.getStart());
+				BaseType int_arr_type = new BaseType(TypeKind.INT, int_token.getStart());
 				Expression ix_exp = parseIndexing();
 				exp = new NewArrayExpr(int_arr_type, ix_exp, first_token.getStart());
 			}
