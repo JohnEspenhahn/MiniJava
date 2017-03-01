@@ -36,6 +36,7 @@ import miniJava.AbstractSyntaxTrees.MethodDecl;
 import miniJava.AbstractSyntaxTrees.MethodDeclList;
 import miniJava.AbstractSyntaxTrees.NewArrayExpr;
 import miniJava.AbstractSyntaxTrees.NewObjectExpr;
+import miniJava.AbstractSyntaxTrees.NullLiteral;
 import miniJava.AbstractSyntaxTrees.Operator;
 import miniJava.AbstractSyntaxTrees.ParameterDecl;
 import miniJava.AbstractSyntaxTrees.ParameterDeclList;
@@ -289,6 +290,10 @@ public class ASTGenTester {
 							new BinaryExpr(div(), lit(2), lit(1)),
 							new BinaryExpr(plus(), lit(3), lit(4))),
 						lit(true))));
+		
+		astCheck(makeParser("ob1 == null").parseExpression(),
+				new BinaryExpr(equ(), new RefExpr(new IdRef(id("ob1"))), null_lit()));
+								
 	}
 
 	@Test
@@ -434,6 +439,10 @@ public class ASTGenTester {
 	
 	private static Expression lit(boolean b) {
 		return new LiteralExpr(new BooleanLiteral(new Token(TokenKind.BOOLEAN, "" + b)));
+	}
+	
+	private static Expression null_lit() {
+		return new LiteralExpr(new NullLiteral(new Token(TokenKind.NULL, "null")));
 	}
 	
 	private static Identifier id(String name) {

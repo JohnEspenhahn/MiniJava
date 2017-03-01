@@ -97,6 +97,15 @@ public class ParserTest {
 		checkParse("int i j = 0;", WrapperType.FUNCTION, false);
 		checkParse("int i = 0; i j = 0;", WrapperType.FUNCTION, true);
 		
+		// Null
+		checkParse("int i = null;", WrapperType.FUNCTION, true);
+		checkParse("null i = null;", WrapperType.FUNCTION, false);
+		checkParse("null();", WrapperType.FUNCTION, false);
+		checkParse("null.x = 1;", WrapperType.FUNCTION, false);
+		checkParse("return true;", WrapperType.FUNCTION, true);
+		checkParse("return null;", WrapperType.FUNCTION, true);
+		checkParse("astring == null", WrapperType.CONDITIONAL, true);
+		
 		// Statement Assign/Invoke
 		checkParse("int i = i j = 0;", WrapperType.FUNCTION, false);
 		checkParse("int i = i = 0;", WrapperType.FUNCTION, false);

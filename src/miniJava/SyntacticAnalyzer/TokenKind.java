@@ -19,7 +19,7 @@ public enum TokenKind {
 	BOOLEAN, THIS, IF, WHILE, ELSE, TRUE, FALSE,
 	NEW, RETURN,
 	
-	NUM,
+	NUM, NULL,
 	IDENTIFIER,
 	EOT,
 	

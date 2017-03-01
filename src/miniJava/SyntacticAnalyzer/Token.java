@@ -58,6 +58,7 @@ public class Token {
 		case "false": return TokenKind.FALSE;
 		case "new": return TokenKind.NEW;
 		case "return": return TokenKind.RETURN;
+		case "null": return TokenKind.NULL;
 		default: return TokenKind.IDENTIFIER;
 		}
 	}

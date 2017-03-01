@@ -61,6 +61,7 @@ public class ScannerTest {
 		});
 		// EXPRESSION
 		checkScan("true false", new TokenKind[] { TRUE, FALSE });
+		checkScan("null", new TokenKind[] { NULL });
 		checkScan("new id(); int[1]; ident[a]", new TokenKind[] {
 			NEW, IDENTIFIER, PAREN_OPEN, PAREN_CLOSE, SEMICOLON, INT, SQR_OPEN, NUM, SQR_CLOSE,
 			SEMICOLON, IDENTIFIER, SQR_OPEN, IDENTIFIER, SQR_CLOSE

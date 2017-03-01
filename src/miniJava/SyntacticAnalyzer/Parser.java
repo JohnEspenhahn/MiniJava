@@ -11,6 +11,7 @@ import static miniJava.SyntacticAnalyzer.TokenKind.ELSE;
 import static miniJava.SyntacticAnalyzer.TokenKind.EOT;
 import static miniJava.SyntacticAnalyzer.TokenKind.FALSE;
 import static miniJava.SyntacticAnalyzer.TokenKind.IDENTIFIER;
+import static miniJava.SyntacticAnalyzer.TokenKind.NULL;
 import static miniJava.SyntacticAnalyzer.TokenKind.IF;
 import static miniJava.SyntacticAnalyzer.TokenKind.INT;
 import static miniJava.SyntacticAnalyzer.TokenKind.MINUS;
@@ -61,6 +62,7 @@ import miniJava.AbstractSyntaxTrees.MethodDecl;
 import miniJava.AbstractSyntaxTrees.MethodDeclList;
 import miniJava.AbstractSyntaxTrees.NewArrayExpr;
 import miniJava.AbstractSyntaxTrees.NewObjectExpr;
+import miniJava.AbstractSyntaxTrees.NullLiteral;
 import miniJava.AbstractSyntaxTrees.Operator;
 import miniJava.AbstractSyntaxTrees.Package;
 import miniJava.AbstractSyntaxTrees.ParameterDecl;
@@ -457,7 +459,7 @@ public class Parser {
 	
 	// Kinda helps with organization, overhead might not be worth it
 	private static TokenKind[] STARTERS_EXPRESSION = new TokenKind[] { 
-			PAREN_OPEN, NUM, TRUE, FALSE, NEW, 
+			PAREN_OPEN, NUM, TRUE, FALSE, NULL, NEW, 
 			NOT, MINUS, // unop 
 			THIS, IDENTIFIER // STARTERS_REFERENCE
 		};
@@ -539,6 +541,9 @@ public class Parser {
 		case NUM:
 			Token int_lit = acceptIt();
 			return new LiteralExpr(new IntLiteral(int_lit), int_lit.getStart());
+		case NULL:
+			Token null_lit = acceptIt();
+			return new LiteralExpr(new NullLiteral(null_lit), null_lit.getStart());
 		case TRUE: case FALSE:
 			Token bool_lit = acceptIt();
 			return new LiteralExpr(new BooleanLiteral(bool_lit), bool_lit.getStart());
