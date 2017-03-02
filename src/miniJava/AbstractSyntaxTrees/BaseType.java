@@ -20,4 +20,9 @@ public class BaseType extends TypeDenoter
     public <A,R> R visit(Visitor<A,R> v, A o) {
         return v.visitBaseType(this, o);
     }
+    
+    public Declaration getMember(String name) {
+    	// Base type has no members
+    	return null;
+    }
 }

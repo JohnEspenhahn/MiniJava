@@ -9,6 +9,9 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class MethodDecl extends MemberDecl {
 	
+	public ParameterDeclList parameterDeclList;
+	public StatementList statementList;
+	
 	public MethodDecl(MemberDecl md, ParameterDeclList pl, StatementList sl) {
 		this(md, pl, sl, SourcePosition.ZERO);
 	}
@@ -22,7 +25,12 @@ public class MethodDecl extends MemberDecl {
 	public <A, R> R visit(Visitor<A, R> v, A o) {
         return v.visitMethodDecl(this, o);
     }
+
+	@Override
+	public Declaration getMember(String name) {
+		// Method has no child members
+		return null;
+	}
 	
-	public ParameterDeclList parameterDeclList;
-	public StatementList statementList;
+	
 }

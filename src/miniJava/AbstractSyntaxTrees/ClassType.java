@@ -5,10 +5,13 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.ContextualAnalyzer.Exceptions.MiniJavaClassNotFoundException;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ClassType extends TypeDenoter
 {
+	public Identifier className;
+	
 	public ClassType(Identifier cn) {
 		this(cn, SourcePosition.ZERO);
 	}
@@ -22,5 +25,13 @@ public class ClassType extends TypeDenoter
         return v.visitClassType(this, o);
     }
 
-    public Identifier className;
+	@Override
+	public Declaration getMember(String name) {
+		Declaration classDecl = this.className.getDecl();
+		if (classDecl == null) throw new MiniJavaClassNotFoundException(this);
+		
+		return classDecl.getMember(name);
+	}
+
+    
 }

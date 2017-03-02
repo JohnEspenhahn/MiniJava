@@ -9,12 +9,14 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 abstract public class TypeDenoter extends AST {
     
+	public TypeKind typeKind;
+	
     public TypeDenoter(TypeKind type, SourcePosition posn){
         super(posn);
         typeKind = type;
     }
     
-    public TypeKind typeKind;
+    public abstract Declaration getMember(String name);
     
 }
 
