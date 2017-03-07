@@ -24,9 +24,4 @@ public class FieldDecl extends MemberDecl {
 	public <A, R> R visit(Visitor<A, R> v, A o) {
 		return v.visitFieldDecl(this, o);
 	}
-
-	@Override
-	public Declaration getMember(String name) {
-		return this.type.getMember(name);
-	}
 }

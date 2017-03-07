@@ -20,10 +20,5 @@ public class ParameterDecl extends LocalDecl {
 	public <A, R> R visit(Visitor<A, R> v, A o) {
         return v.visitParameterDecl(this, o);
     }
-
-	@Override
-	public Declaration getMember(String name) {
-		return this.type.getMember(name);
-	}
 }
 

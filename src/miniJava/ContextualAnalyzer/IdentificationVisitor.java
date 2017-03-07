@@ -49,8 +49,17 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		for (ClassDecl c: prog.classDeclList)
 			scope.declare(c);
 		
+		// Visit all publicly accessible classes
 		for (ClassDecl c: prog.classDeclList)
 			c.visit(this, scope);
+		
+		// Visit types of all publicly accessible variables in each class (don't add to scope yet)
+		for (ClassDecl c: prog.classDeclList) {
+			for (FieldDecl fd: c.fieldDeclList)
+				fd.type.visit(this, scope);
+			for (MethodDecl md: c.methodDeclList)
+				md.type.visit(this, scope);
+		}
 		
 		return null;
 	}
@@ -59,15 +68,15 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	public Object visitClassDecl(ClassDecl cd, ScopeStack scope) {
 		scope.openScope(cd);
 		
-		for (MethodDecl md: cd.methodDeclList)
-			scope.declare(md);
 		for (FieldDecl fd: cd.fieldDeclList)
 			scope.declare(fd);
-		
 		for (MethodDecl md: cd.methodDeclList)
-			md.visit(this, scope);
+			scope.declare(md);
+		
 		for (FieldDecl fd: cd.fieldDeclList)
 			fd.visit(this, scope);
+		for (MethodDecl md: cd.methodDeclList)
+			md.visit(this, scope);
 		
 		scope.closeScope();
 		return null;
@@ -75,7 +84,6 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitFieldDecl(FieldDecl fd, ScopeStack scope) {
-		fd.type.visit(this, scope);
 		return null;
 	}
 

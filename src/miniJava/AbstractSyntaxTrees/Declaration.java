@@ -27,7 +27,9 @@ public abstract class Declaration extends AST {
 		this.danglingdef_error = false;
 	}
 	
-	public abstract Declaration getMember(String name);
+	public Declaration getMember(String name) {
+		return type.getMember(name);
+	}
 	
 	// Error flags
 	public boolean duplicate_error;
