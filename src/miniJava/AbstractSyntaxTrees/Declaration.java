@@ -21,18 +21,16 @@ public abstract class Declaration extends AST {
 		this.name = name;
 		this.type = type;
 		
-		// Error flags
-		this.duplicate_error = false;
-		this.selfref_error = false;
-		this.danglingdef_error = false;
+		// Processing flags
+		this.being_declared = false;
 	}
 	
-	public Declaration getMember(String name) {
-		return type.getMember(name);
+	public Declaration getMember(Identifier ident) {
+		return type.getMember(ident);
 	}
 	
-	// Error flags
-	public boolean duplicate_error;
-	public boolean selfref_error;
-	public boolean danglingdef_error;
+	public abstract boolean allowStaticReference();
+	
+	// Processing flags
+	public boolean being_declared;
 }

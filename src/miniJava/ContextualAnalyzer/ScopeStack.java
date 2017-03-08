@@ -1,10 +1,9 @@
 package miniJava.ContextualAnalyzer;
 
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 
 import miniJava.AbstractSyntaxTrees.BaseType;
 import miniJava.AbstractSyntaxTrees.BlockStmt;
@@ -14,16 +13,15 @@ import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
 import miniJava.AbstractSyntaxTrees.FieldDeclList;
 import miniJava.AbstractSyntaxTrees.Identifier;
-import miniJava.AbstractSyntaxTrees.MemberDecl;
 import miniJava.AbstractSyntaxTrees.MethodDecl;
 import miniJava.AbstractSyntaxTrees.MethodDeclList;
 import miniJava.AbstractSyntaxTrees.ParameterDecl;
 import miniJava.AbstractSyntaxTrees.ParameterDeclList;
-import miniJava.AbstractSyntaxTrees.Reference;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.StatementList;
 import miniJava.AbstractSyntaxTrees.TypeKind;
-import miniJava.AbstractSyntaxTrees.VarDecl;
+import miniJava.ContextualAnalyzer.Exceptions.DuplicateDefinitionException;
+import miniJava.ContextualAnalyzer.Exceptions.StaticReferenceException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
@@ -31,17 +29,13 @@ import miniJava.SyntacticAnalyzer.TokenKind;
 public class ScopeStack {
 
 	// Stack of all current scopes
-	private Stack<Scope> scopes;
+	private Deque<Scope> scopes;
 	private Map<String, ClassDecl> classes;
 	
-	// Variables that are being declared (to detect self-reference)
-	private Set<String> being_declared;
-	
 	public ScopeStack() {
-		this.scopes = new Stack<Scope>();
+		// Use linked list to get correct iteration order
+		this.scopes = new LinkedList<Scope>();
 		this.classes = new HashMap<String, ClassDecl>();
-		
-		this.being_declared = new HashSet<String>();
 		
 		createLevel0();
 	}
@@ -104,34 +98,27 @@ public class ScopeStack {
 		return this.getActiveScope().static_scope;
 	}
 	
-	public void startDeclaring(VarDecl decl) {
-		this.being_declared.add(decl.name);
-	}
-	
-	public void declare(Declaration decl) {
-		// Require calling startDeclaring before declare for VarDecls (needed for self-reference error)
-		if (decl instanceof VarDecl && !this.being_declared.contains(decl.name))
-			throw new RuntimeException("VarDecl " + decl + " was not started!");
-		
+	/**
+	 * Add a declaration to the active scope, checking for scope related errors
+	 * @param decl The declaration AST object to add
+	 */
+	public void declare(Declaration decl) {		
 		// Keep track of all ClassDecls
 		if (decl instanceof ClassDecl && !classes.containsKey(decl.name))
 			this.classes.put(decl.name, (ClassDecl) decl);
 		
 		Scope scope = this.getActiveScope();
 		if (scope.kind.depth >= Scope.Kind.BLOCKSTMT.depth) {
-			// Check that local variable isn't hiding another local variable
+			// Check that local variable isn't hiding another local variable or parameter
 			for (Scope parent_scope: this.scopes) {
 				if (parent_scope.kind.depth < Scope.Kind.METHOD.depth) {
-					// Allow hiding class or class member
+					// Allow hiding of non-local and non-parameter variables
 					break;
-				} 
+				}
 				
 				Declaration hiding = parent_scope.get(decl.name);
-				if (hiding != null) {
-					// Found hiding of another local variable
-					hiding.duplicate_error = decl.duplicate_error = true;
-					break;
-				}					
+				if (hiding != null)
+					throw new DuplicateDefinitionException(decl);
 			}
 		}
 		
@@ -139,34 +126,26 @@ public class ScopeStack {
 		scope.add(decl);
 	}
 	
-	public void link(Reference ref, String name) {
+	/**
+	 * Link the given identifier to the matching declaration with the given name
+	 * @param ref The reference to get linked
+	 * @param name The name of the declared variable to link it to
+	 */
+	public Declaration lookup(Identifier ident) {
 		Declaration decl = null;
 		for (Scope s: this.scopes) {
-			decl = s.get(name);
+			decl = s.get(ident.spelling);
 			if (decl != null) {
-				// Check for selfreference error
-				if (this.being_declared.contains(name))
-					decl.selfref_error = true;
-				// Found match, so stop looking
-				break;
+				if (decl.being_declared) 
+					throw new UndefinedReferenceException(ident);
+				else if (inStatic() && !decl.allowStaticReference())
+					throw new StaticReferenceException(ident);
+				else 
+					break;
 			}
 		}
 		
-		link(ref, decl);
-	}
-	
-	public void link(Reference ref, Declaration decl) {
-		if (decl == null) throw new UndefinedReferenceException(ref);
-		
-		// Don't allow accessing non-static members in a static context
-		if (decl instanceof MemberDecl && inStatic() && !((MemberDecl) decl).isStatic)
-			ref.illegal_nonstatic_error = true;
-		
-		ref.setDecl(decl);
-	}
-	
-	public void finishDeclaring(VarDecl decl) {
-		this.being_declared.remove(decl.name);
+		return decl;
 	}
 	
 	public Declaration getCurrentClass() {
@@ -177,7 +156,7 @@ public class ScopeStack {
 		return null;
 	}
 	
-	public ClassDecl getClass(String name) {
-		return this.classes.get(name);
+	public ClassDecl getClass(Identifier ident) {
+		return this.classes.get(ident.spelling);
 	}
 }

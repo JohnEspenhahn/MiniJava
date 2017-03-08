@@ -38,6 +38,7 @@ import miniJava.AbstractSyntaxTrees.VarDeclStmt;
 import miniJava.AbstractSyntaxTrees.Visitor;
 import miniJava.AbstractSyntaxTrees.WhileStmt;
 import miniJava.ContextualAnalyzer.Exceptions.MiniJavaClassNotFoundException;
+import miniJava.ContextualAnalyzer.Exceptions.StaticThisException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 
 public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
@@ -125,7 +126,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	@Override
 	public Object visitClassType(ClassType type, ScopeStack scope) {
 		// Only link class types to class declarations
-		ClassDecl classDecl = scope.getClass(type.className.spelling);
+		ClassDecl classDecl = scope.getClass(type.className);
 		if (classDecl == null) throw new MiniJavaClassNotFoundException(type);
 		
 		type.className.setDecl(classDecl);
@@ -149,10 +150,10 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitVardeclStmt(VarDeclStmt stmt, ScopeStack scope) {
-		scope.startDeclaring(stmt.varDecl);
 		stmt.varDecl.visit(this, scope);
+		stmt.varDecl.being_declared = true;		
 		stmt.initExp.visit(this, scope);
-		scope.finishDeclaring(stmt.varDecl);
+		stmt.varDecl.being_declared = false;
 		return null;
 	}
 
@@ -250,7 +251,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	@Override
 	public Object visitThisRef(ThisRef ref, ScopeStack scope) {
 		// Don't allow 'this' in static scopes
-		if (scope.inStatic()) ref.illegal_nonstatic_error = true;
+		if (scope.inStatic()) throw new StaticThisException(ref);
 		
 		ref.setDecl(scope.getCurrentClass());
 		return null;
@@ -258,13 +259,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitIdRef(IdRef ref, ScopeStack scope) {
-		scope.link(ref, ref.id.spelling);
+		scope.lookup(ref.id);
 		return null;
 	}
 
 	@Override
 	public Object visitIxIdRef(IxIdRef ref, ScopeStack scope) {
-		scope.link(ref, ref.id.spelling);
+		scope.lookup(ref.id);
 		ref.indexExpr.visit(this, scope);
 		return null;
 	}
@@ -274,8 +275,8 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		ref.ref.visit(this, scope); // Bottom up
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
-		Declaration member = ref.ref.getDecl().getMember(ref.id.spelling);
-		scope.link(ref, member);
+		Declaration member = ref.ref.getDecl().getMember(ref.id);
+		ref.setDecl(member);
 		return null;
 	}
 
@@ -284,8 +285,8 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		ref.ref.visit(this, scope); // Bottom up
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
-		Declaration member = ref.ref.getDecl().getMember(ref.id.spelling);
-		scope.link(ref, member);
+		Declaration member = ref.ref.getDecl().getMember(ref.id);
+		ref.setDecl(member);
 		
 		ref.ixExpr.visit(this, scope);
 		return null;

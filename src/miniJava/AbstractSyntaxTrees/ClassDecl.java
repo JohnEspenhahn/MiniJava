@@ -5,6 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.ContextualAnalyzer.Exceptions.StaticReferenceException;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ClassDecl extends Declaration {
@@ -26,14 +27,25 @@ public class ClassDecl extends Declaration {
 		return v.visitClassDecl(this, o);
 	}
 	
-	public Declaration getMember(String name) {
+	@Override
+	public boolean allowStaticReference() {
+		return true;
+	}
+	
+	@Override
+	public Declaration getMember(Identifier ident) {
+		// Accessing class directly, so don't allow access to instance variables
 		for (FieldDecl f: fieldDeclList)
-			if (f.name.equals(name))
-				return f;
+			if (f.name.equals(ident.spelling)) {
+				if (!f.allowStaticReference()) throw new StaticReferenceException(ident);
+				else return f;
+			}
 		
 		for (MethodDecl m: methodDeclList)
-			if (m.name.equals(name))
-				return m;
+			if (m.name.equals(ident.spelling)) {
+				if (!m.allowStaticReference()) throw new StaticReferenceException(ident);
+				else return m;
+			}
 		
 		return null;
 	}

@@ -26,11 +26,21 @@ public class ClassType extends TypeDenoter
     }
 
 	@Override
-	public Declaration getMember(String name) {
-		Declaration classDecl = this.className.getDecl();
-		if (classDecl == null) throw new MiniJavaClassNotFoundException(this);
+	public Declaration getMember(Identifier ident) {
+		Declaration cd = this.className.getDecl();
+		if (cd == null || !(cd instanceof ClassDecl))
+			throw new MiniJavaClassNotFoundException(this);
 		
-		return classDecl.getMember(name);
+		// Unlike in the ClassDecl getMember function, here we have an instance to allow non-static
+		for (FieldDecl f: ((ClassDecl) cd).fieldDeclList)
+			if (f.name.equals(ident.spelling))
+				return f;
+		
+		for (MethodDecl m: ((ClassDecl) cd).methodDeclList)
+			if (m.name.equals(ident.spelling))
+				return m;
+		
+		return null;
 	}
 
     

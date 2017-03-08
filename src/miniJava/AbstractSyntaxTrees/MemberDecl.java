@@ -25,6 +25,10 @@ abstract public class MemberDecl extends Declaration {
     	this.isStatic = md.isStatic;
     }
     
+    public boolean allowStaticReference() {
+		return isStatic;
+	}
+    
     public boolean isPrivate;
     public boolean isStatic;
 }

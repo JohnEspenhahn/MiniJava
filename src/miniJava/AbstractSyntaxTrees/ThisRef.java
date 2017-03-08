@@ -22,4 +22,9 @@ public class ThisRef extends BaseRef {
 		return v.visitThisRef(this, o);
 	}
 	
+	@Override
+	public String toString() {
+		return "this";
+	}
+	
 }

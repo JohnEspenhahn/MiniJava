@@ -21,7 +21,8 @@ public class BaseType extends TypeDenoter
         return v.visitBaseType(this, o);
     }
     
-    public Declaration getMember(String name) {
+    @Override
+    public Declaration getMember(Identifier ident) {
     	// Base type has no members
     	return null;
     }

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import miniJava.AbstractSyntaxTrees.Declaration;
+import miniJava.ContextualAnalyzer.Exceptions.DanglingDefinitionException;
+import miniJava.ContextualAnalyzer.Exceptions.DuplicateDefinitionException;
 
 public class Scope {
 	private Map<String, Declaration> decls;
@@ -22,13 +24,11 @@ public class Scope {
 	
 	public void add(Declaration decl) {
 		// Cannot declare variable in a stmt that just ends (needs to be at least a BlockStmt)
-		if (kind == Kind.STMT)
-			decl.danglingdef_error = true;
+		if (kind == Kind.STMT) throw new DanglingDefinitionException(decl);
 		
 		Declaration prev = decls.get(decl.name);
 		if (prev != null)
-			// Flag both as duplicate
-			prev.duplicate_error = decl.duplicate_error = true;
+			throw new DuplicateDefinitionException(decl);
 		else
 			this.decls.put(decl.name, decl);
 	}
