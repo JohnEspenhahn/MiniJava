@@ -26,4 +26,9 @@ public class QRef extends QualifiedRef {
 
 	public Reference ref;
 	public Identifier id;
+	
+	@Override
+	public String toString() {
+		return ref + "." + id;
+	}
 }

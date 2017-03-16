@@ -9,13 +9,17 @@ import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
 abstract public class Terminal extends AST {
+	public TokenKind kind;
+	public String spelling;
 
-  public Terminal (Token t) {
-	super(t.getStart());
-    spelling = t.getSpelling();
-    kind = t.getKind();
-  }
+	public Terminal(Token t) {
+		super(t.getStart());
+		spelling = t.getSpelling();
+		kind = t.getKind();
+	}
 
-  public TokenKind kind;
-  public String spelling;
+	@Override
+	public String toString() {
+		return spelling;
+	}
 }

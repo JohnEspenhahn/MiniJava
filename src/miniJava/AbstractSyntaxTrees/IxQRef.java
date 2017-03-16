@@ -24,4 +24,8 @@ public class IxQRef extends QualifiedRef {
 	public Identifier id;
 	public Expression ixExpr;
 
+	@Override
+	public String toString() {
+		return ref + "." + id + "[...]";
+	}
 }

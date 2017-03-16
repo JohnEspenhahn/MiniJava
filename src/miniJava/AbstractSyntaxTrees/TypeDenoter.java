@@ -16,7 +16,7 @@ abstract public class TypeDenoter extends AST {
         typeKind = type;
     }
     
-    public abstract Declaration getMember(Identifier id);
+    public abstract MemberDecl getMember(Identifier id);
     
 }
 

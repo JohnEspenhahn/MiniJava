@@ -22,7 +22,7 @@ public class BaseType extends TypeDenoter
     }
     
     @Override
-    public Declaration getMember(Identifier ident) {
+    public MemberDecl getMember(Identifier ident) {
     	// Base type has no members
     	return null;
     }

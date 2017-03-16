@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.IOException;
 
 import miniJava.AbstractSyntaxTrees.ASTDisplay;
+import miniJava.ContextualAnalyzer.IdentificationVisitor;
+import miniJava.ContextualAnalyzer.TypeErrors;
+import miniJava.ContextualAnalyzer.TypeVisitor;
+import miniJava.ContextualAnalyzer.Exceptions.TypeException;
 import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
 import miniJava.SyntacticAnalyzer.SourceFile;
@@ -29,7 +33,19 @@ public class Compiler {
 				System.exit(4);
 			} else {
 				new ASTDisplay().showTree(pck);
-				System.exit(0);
+				if (new IdentificationVisitor().visit(pck)) {
+					TypeErrors errs = new TypeVisitor().visit(pck);
+					if (errs.size() == 0)
+						System.exit(0);
+					else {
+						for (TypeException e: errs) {
+							System.out.println(e.getMessage());
+						}
+						System.exit(4);
+					}
+				}
+				else 
+					System.exit(4);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -25,7 +25,7 @@ public abstract class Declaration extends AST {
 		this.being_declared = false;
 	}
 	
-	public Declaration getMember(Identifier ident) {
+	public MemberDecl getMember(Identifier ident) {
 		return type.getMember(ident);
 	}
 	

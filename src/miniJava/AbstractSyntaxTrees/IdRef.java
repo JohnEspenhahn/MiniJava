@@ -23,4 +23,8 @@ public class IdRef extends BaseRef {
 		return v.visitIdRef(this, o);
 	}
 	
+	@Override
+	public String toString() {
+		return id.toString();
+	}
 }

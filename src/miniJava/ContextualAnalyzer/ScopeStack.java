@@ -49,7 +49,7 @@ public class ScopeStack {
 		SystemFields.add(new FieldDecl(false, true, 
 				new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, "_PrintStream", null, null)), null), 
 				"out", null));
-		declare(new ClassDecl("System", SystemFields, new MethodDeclList()));
+		this.classes.put("System", new ClassDecl("System", SystemFields, new MethodDeclList()));
 		
 		// class _PrintStream
 		MethodDeclList PrintStreamMethods = new MethodDeclList();
@@ -58,10 +58,10 @@ public class ScopeStack {
 		PrintStreamMethods.add(new MethodDecl(
 				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "println"),
 				PrintLnParams, new StatementList()));
-		declare(new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods));
+		this.classes.put("_PrintStream", new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods));
 		
 		// class String
-		declare(new ClassDecl("String", new FieldDeclList(), new MethodDeclList()));
+		this.classes.put("String", new ClassDecl("String", new FieldDeclList(), new MethodDeclList()));
 	}
 	
 	public void openScope(ClassDecl decl) {
@@ -127,9 +127,8 @@ public class ScopeStack {
 	}
 	
 	/**
-	 * Link the given identifier to the matching declaration with the given name
-	 * @param ref The reference to get linked
-	 * @param name The name of the declared variable to link it to
+	 * Find the declaration that matches the given identifier
+	 * @param ident The identifier to lookup
 	 */
 	public Declaration lookup(Identifier ident) {
 		Declaration decl = null;
@@ -148,10 +147,22 @@ public class ScopeStack {
 		return decl;
 	}
 	
-	public Declaration getCurrentClass() {
+	public Iterable<ClassDecl> getClasses() {
+		return this.classes.values();
+	}
+	
+	public ClassDecl getCurrentClass() {
 		for (Scope s: this.scopes) {
 			if (s.kind == Scope.Kind.CLASS)
-				return s.owner;
+				return (ClassDecl) s.owner;
+		}
+		return null;
+	}
+	
+	public MethodDecl getCurrentMethod() {
+		for (Scope s: this.scopes) {
+			if (s.kind == Scope.Kind.METHOD)
+				return (MethodDecl) s.owner;
 		}
 		return null;
 	}

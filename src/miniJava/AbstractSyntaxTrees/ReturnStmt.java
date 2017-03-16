@@ -23,4 +23,5 @@ public class ReturnStmt extends Statement
 	}
 
 	public Expression returnExpr;
+	public MethodDecl wrappingMethod;
 }	

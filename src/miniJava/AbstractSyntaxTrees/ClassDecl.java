@@ -33,7 +33,7 @@ public class ClassDecl extends Declaration {
 	}
 	
 	@Override
-	public Declaration getMember(Identifier ident) {
+	public MemberDecl getMember(Identifier ident) {
 		// Accessing class directly, so don't allow access to instance variables
 		for (FieldDecl f: fieldDeclList)
 			if (f.name.equals(ident.spelling)) {

@@ -25,7 +25,7 @@ public class ArrayType extends TypeDenoter {
 	}
 
 	@Override
-	public Declaration getMember(Identifier ident) {
+	public MemberDecl getMember(Identifier ident) {
 		// Array has no named members
 		return null;
 	}

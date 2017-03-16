@@ -15,7 +15,7 @@ public class CallExpr extends Expression
 	
     public CallExpr(Reference f, ExprList el, SourcePosition posn){
         super(posn);
-        functionRef = f;
+        methodRef = f;
         argList = el;
     }
         
@@ -23,6 +23,6 @@ public class CallExpr extends Expression
         return v.visitCallExpr(this, o);
     }
     
-    public Reference functionRef;
+    public Reference methodRef;
     public ExprList argList;
 }

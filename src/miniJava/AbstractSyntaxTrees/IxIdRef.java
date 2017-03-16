@@ -25,4 +25,9 @@ public class IxIdRef extends BaseRef {
 	
 	public Identifier id;
 	public Expression indexExpr;
+	
+	@Override
+	public String toString() {
+		return id + "[...]";
+	}
 }

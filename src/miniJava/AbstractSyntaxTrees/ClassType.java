@@ -11,6 +11,7 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 public class ClassType extends TypeDenoter
 {
 	public Identifier className;
+	private ClassDecl decl;
 	
 	public ClassType(Identifier cn) {
 		this(cn, SourcePosition.ZERO);
@@ -24,19 +25,24 @@ public class ClassType extends TypeDenoter
     public <A,R> R visit(Visitor<A,R> v, A o) {
         return v.visitClassType(this, o);
     }
+    
+    public void setDecl(ClassDecl decl) {
+    	if (decl == null) throw new MiniJavaClassNotFoundException(this);
+    	this.decl = decl;
+    }
+    
+    public ClassDecl getDecl() {
+    	return this.decl;
+    }
 
 	@Override
-	public Declaration getMember(Identifier ident) {
-		Declaration cd = this.className.getDecl();
-		if (cd == null || !(cd instanceof ClassDecl))
-			throw new MiniJavaClassNotFoundException(this);
-		
+	public MemberDecl getMember(Identifier ident) {
 		// Unlike in the ClassDecl getMember function, here we have an instance to allow non-static
-		for (FieldDecl f: ((ClassDecl) cd).fieldDeclList)
+		for (FieldDecl f: decl.fieldDeclList)
 			if (f.name.equals(ident.spelling))
 				return f;
 		
-		for (MethodDecl m: ((ClassDecl) cd).methodDeclList)
+		for (MethodDecl m: decl.methodDeclList)
 			if (m.name.equals(ident.spelling))
 				return m;
 		

@@ -10,7 +10,6 @@ import miniJava.AbstractSyntaxTrees.CallExpr;
 import miniJava.AbstractSyntaxTrees.CallStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.ClassType;
-import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.Expression;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
 import miniJava.AbstractSyntaxTrees.IdRef;
@@ -20,6 +19,7 @@ import miniJava.AbstractSyntaxTrees.IntLiteral;
 import miniJava.AbstractSyntaxTrees.IxIdRef;
 import miniJava.AbstractSyntaxTrees.IxQRef;
 import miniJava.AbstractSyntaxTrees.LiteralExpr;
+import miniJava.AbstractSyntaxTrees.MemberDecl;
 import miniJava.AbstractSyntaxTrees.MethodDecl;
 import miniJava.AbstractSyntaxTrees.NewArrayExpr;
 import miniJava.AbstractSyntaxTrees.NewObjectExpr;
@@ -37,32 +37,53 @@ import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
 import miniJava.AbstractSyntaxTrees.Visitor;
 import miniJava.AbstractSyntaxTrees.WhileStmt;
-import miniJava.ContextualAnalyzer.Exceptions.MiniJavaClassNotFoundException;
+import miniJava.ContextualAnalyzer.Exceptions.IdentificationException;
+import miniJava.ContextualAnalyzer.Exceptions.NotVisibleException;
 import miniJava.ContextualAnalyzer.Exceptions.StaticThisException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 
 public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	
+	public boolean visit(Package prog) {
+		try {
+			ScopeStack scope = new ScopeStack();
+			
+			// Visit predefined classes
+			visitClassDeclList(scope.getClasses(), scope);
+			
+			// Visit package classes
+			visitPackage(prog, scope);
+			return true;
+		} catch (IdentificationException e) {
+			System.out.println(e.getMessage());
+			return false;
+		}
+	}
+	
 	@Override
 	public Object visitPackage(Package prog, ScopeStack scope) {
 		if (scope == null) scope = new ScopeStack();
 		
-		for (ClassDecl c: prog.classDeclList)
+		visitClassDeclList(prog.classDeclList, scope);
+		
+		return null;
+	}
+	
+	private void visitClassDeclList(Iterable<ClassDecl> cdl, ScopeStack scope) {
+		for (ClassDecl c: cdl)
 			scope.declare(c);
 		
 		// Visit all publicly accessible classes
-		for (ClassDecl c: prog.classDeclList)
+		for (ClassDecl c: cdl)
 			c.visit(this, scope);
 		
 		// Visit types of all publicly accessible variables in each class (don't add to scope yet)
-		for (ClassDecl c: prog.classDeclList) {
+		for (ClassDecl c: cdl) {
 			for (FieldDecl fd: c.fieldDeclList)
 				fd.type.visit(this, scope);
 			for (MethodDecl md: c.methodDeclList)
 				md.type.visit(this, scope);
 		}
-		
-		return null;
 	}
 
 	@Override
@@ -85,6 +106,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitFieldDecl(FieldDecl fd, ScopeStack scope) {
+		fd.type.visit(this, scope);
 		return null;
 	}
 
@@ -127,9 +149,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	public Object visitClassType(ClassType type, ScopeStack scope) {
 		// Only link class types to class declarations
 		ClassDecl classDecl = scope.getClass(type.className);
-		if (classDecl == null) throw new MiniJavaClassNotFoundException(type);
-		
-		type.className.setDecl(classDecl);
+		type.setDecl(classDecl);
 		return null;
 	}
 
@@ -174,6 +194,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitReturnStmt(ReturnStmt stmt, ScopeStack scope) {
+		stmt.wrappingMethod = scope.getCurrentMethod();
 		stmt.returnExpr.visit(this, scope);	
 		return null;
 	}
@@ -186,9 +207,11 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		stmt.thenStmt.visit(this, scope);
 		scope.closeScope();
 		
-		scope.openScope(stmt.elseStmt);
-		stmt.elseStmt.visit(this, scope);
-		scope.closeScope();
+		if (stmt.elseStmt != null) {
+			scope.openScope(stmt.elseStmt);
+			stmt.elseStmt.visit(this, scope);
+			scope.closeScope();
+		}
 		
 		return null;
 	}
@@ -224,7 +247,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitCallExpr(CallExpr expr, ScopeStack scope) {
-		expr.functionRef.visit(this, scope);
+		expr.methodRef.visit(this, scope);
 		for (Expression e: expr.argList)
 			e.visit(this, scope);
 		return null;
@@ -259,13 +282,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitIdRef(IdRef ref, ScopeStack scope) {
-		scope.lookup(ref.id);
+		ref.setDecl(scope.lookup(ref.id));
 		return null;
 	}
 
 	@Override
 	public Object visitIxIdRef(IxIdRef ref, ScopeStack scope) {
-		scope.lookup(ref.id);
+		ref.setDecl(scope.lookup(ref.id));
 		ref.indexExpr.visit(this, scope);
 		return null;
 	}
@@ -275,8 +298,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		ref.ref.visit(this, scope); // Bottom up
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
-		Declaration member = ref.ref.getDecl().getMember(ref.id);
+		MemberDecl member = ref.ref.getDecl().getMember(ref.id);
 		ref.setDecl(member);
+		
+		if (member.isPrivate && scope.getCurrentClass() != ref.ref.getDecl()) {
+			throw new NotVisibleException(ref.ref, member);
+		}
+		
 		return null;
 	}
 
@@ -285,8 +313,12 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		ref.ref.visit(this, scope); // Bottom up
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
-		Declaration member = ref.ref.getDecl().getMember(ref.id);
+		MemberDecl member = ref.ref.getDecl().getMember(ref.id);
 		ref.setDecl(member);
+		
+		if (member.isPrivate && scope.getCurrentClass() != ref.ref.getDecl()) {
+			throw new NotVisibleException(ref.ref, member);
+		}
 		
 		ref.ixExpr.visit(this, scope);
 		return null;
@@ -294,9 +326,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitIdentifier(Identifier id, ScopeStack scope) {
-		// TODO Auto-generated method stub
-		System.err.println("Why am I visiting an Identifier?");
-		return null;
+		throw new RuntimeException("Why am I visiting an Identifier?");
 	}
 
 	@Override
