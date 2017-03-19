@@ -49,15 +49,11 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		return errors;
 	}
 	
-	private void visitClassDeclList(Iterable<ClassDecl> classDeclList) {
-		for (ClassDecl decl: classDeclList) {
-			decl.visit(this, null);
-		}
-	}
-	
 	@Override
 	public Type visitPackage(Package prog, Object arg) {
-		visitClassDeclList(prog.classDeclList);
+		for (ClassDecl decl: prog.classDeclList) {
+			decl.visit(this, null);
+		}
 		return Type.UNSUPPORTED; // Always OK
 	}
 
