@@ -104,7 +104,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 	@Override
 	public Type visitArrayType(ArrayType type, Object arg) {
-		return new Type(type.typeKind, new Type(type.eltType.typeKind));
+		return new Type(type.typeKind, type.eltType.visit(this, null));
 	}
 
 	@Override
