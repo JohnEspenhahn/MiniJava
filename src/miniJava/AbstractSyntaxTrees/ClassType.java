@@ -37,16 +37,8 @@ public class ClassType extends TypeDenoter
 
 	@Override
 	public MemberDecl getMember(Identifier ident) {
-		// Unlike in the ClassDecl getMember function, here we have an instance to allow non-static
-		for (FieldDecl f: decl.fieldDeclList)
-			if (f.name.equals(ident.spelling))
-				return f;
-		
-		for (MethodDecl m: decl.methodDeclList)
-			if (m.name.equals(ident.spelling))
-				return m;
-		
-		return null;
+		// Calling from an instance of the class, so allow access to non-statics
+		return this.decl.getMember(ident, false);
 	}
 
     

@@ -8,6 +8,8 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class QRef extends QualifiedRef {
+	public Reference ref;
+	public Identifier id;
 	
 	public QRef(Reference ref, Identifier id) {
 		this(ref, id, SourcePosition.ZERO);
@@ -24,8 +26,15 @@ public class QRef extends QualifiedRef {
 		return v.visitQRef(this, o);
 	}
 
-	public Reference ref;
-	public Identifier id;
+	@Override
+	public Identifier getIdent() {
+		return this.id;
+	}
+	
+	@Override
+	public Reference getRef() {
+		return this.ref;
+	}	
 	
 	@Override
 	public String toString() {

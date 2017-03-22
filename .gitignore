@@ -3,3 +3,6 @@ bin/
 .project
 .settings/org.eclipse.jdt.core.prefs
 evil.java
+test_private.mjava
+test_static.mjava
+test.mjava

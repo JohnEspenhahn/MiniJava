@@ -28,6 +28,7 @@ import miniJava.AbstractSyntaxTrees.Operator;
 import miniJava.AbstractSyntaxTrees.Package;
 import miniJava.AbstractSyntaxTrees.ParameterDecl;
 import miniJava.AbstractSyntaxTrees.QRef;
+import miniJava.AbstractSyntaxTrees.QualifiedRef;
 import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
@@ -73,10 +74,6 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		for (ClassDecl c: cdl)
 			scope.declare(c);
 		
-		// Visit all publicly accessible classes
-		for (ClassDecl c: cdl)
-			c.visit(this, scope);
-		
 		// Visit types of all publicly accessible variables in each class (don't add to scope yet)
 		for (ClassDecl c: cdl) {
 			for (FieldDecl fd: c.fieldDeclList)
@@ -84,12 +81,17 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 			for (MethodDecl md: c.methodDeclList)
 				md.type.visit(this, scope);
 		}
+		
+		// Visit all publicly accessible classes
+		for (ClassDecl c: cdl)
+			c.visit(this, scope);
 	}
 
 	@Override
 	public Object visitClassDecl(ClassDecl cd, ScopeStack scope) {
 		scope.openScope(cd);
 		
+		cd.type.visit(this, scope);
 		for (FieldDecl fd: cd.fieldDeclList)
 			scope.declare(fd);
 		for (MethodDecl md: cd.methodDeclList)
@@ -276,7 +278,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		// Don't allow 'this' in static scopes
 		if (scope.inStatic()) throw new StaticThisException(ref);
 		
-		ref.setDecl(scope.getCurrentClass());
+		ref.setDecl(new VarDecl(scope.getCurrentClass().type, "this"));
 		return null;
 	}
 
@@ -301,9 +303,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		MemberDecl member = ref.ref.getDecl().getMember(ref.id);
 		ref.setDecl(member);
 		
-		if (member.isPrivate && scope.getCurrentClass() != ref.ref.getDecl()) {
-			throw new NotVisibleException(ref.ref, member);
-		}
+		if (member.isPrivate) checkPrivate(ref, member, scope);
 		
 		return null;
 	}
@@ -316,12 +316,19 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		MemberDecl member = ref.ref.getDecl().getMember(ref.id);
 		ref.setDecl(member);
 		
-		if (member.isPrivate && scope.getCurrentClass() != ref.ref.getDecl()) {
-			throw new NotVisibleException(ref.ref, member);
-		}
+		if (member.isPrivate) checkPrivate(ref, member, scope);		
 		
 		ref.ixExpr.visit(this, scope);
 		return null;
+	}
+	
+	private void checkPrivate(QualifiedRef ref, MemberDecl member, ScopeStack scope) {
+		if (member.isPrivate) {
+			// Check if this member is the member from the current class with the same name (allow nonstatic)
+			MemberDecl currentclass_member = scope.getCurrentClass().getMember(ref.getIdent(), false);
+			if (member != currentclass_member)
+				throw new NotVisibleException(ref.getRef(), member);
+		}
 	}
 
 	@Override

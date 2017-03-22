@@ -8,4 +8,6 @@ public abstract class QualifiedRef extends Reference {
 		super(posn);
 	}
 
+	public abstract Identifier getIdent();
+	public abstract Reference getRef();
 }
