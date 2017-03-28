@@ -96,7 +96,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 	@Override
 	public Type visitClassType(ClassType type, Object arg) {
 		// Special case
-		if (type.className.spelling.equals("String"))
+		if (type.getDecl() == ScopeStack.UNSUPPORTED_STRING)
 			return Type.UNSUPPORTED;
 		
 		return new Type(TypeKind.CLASS, type.getDecl());
@@ -132,12 +132,16 @@ public class TypeVisitor implements Visitor<Object, Type> {
 	@Override
 	public Type visitCallStmt(CallStmt stmt, Object arg) {
 		MethodDecl decl = (MethodDecl) stmt.methodRef.getDecl();
-		for (int i = 0; i < decl.parameterDeclList.size(); i++) {
-			ParameterDecl p = decl.parameterDeclList.get(i);
-			
-			Type pType = p.visit(this, null);
-			Type expType = stmt.argList.get(i).visit(this, null);
-			checkEquals(pType, expType, stmt);
+		if (decl.parameterDeclList.size() != stmt.argList.size()) {
+			this.errors.add(new TypeException("Argument list length doesn't match declaration", stmt));
+		} else {
+			for (int i = 0; i < decl.parameterDeclList.size() && i < stmt.argList.size(); i++) {
+				ParameterDecl p = decl.parameterDeclList.get(i);
+				
+				Type pType = p.visit(this, null);
+				Type expType = stmt.argList.get(i).visit(this, null);
+				checkEquals(pType, expType, stmt);
+			}	
 		}
 		return decl.type.visit(this, null);
 	}
@@ -247,7 +251,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 	@Override
 	public Type visitThisRef(ThisRef ref, Object arg) {
-		return new Type(TypeKind.CLASS, (ClassDecl) ref.getDecl());
+		return ref.getDecl().type.visit(this, null);
 	}
 
 	@Override
@@ -273,9 +277,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 	public Type visitIxQRef(IxQRef ref, Object arg) {
 		Type ixType = ref.ixExpr.visit(this, null);
 		checkEquals(ixType, Type.INT, ref.ixExpr);
-		
-		TypeDenoter arrType = ref.getDecl().type;
-		return visitIndexing(arrType);
+		return ref.getDecl().type.visit(this, null);
 	}
 	
 	private Type visitIndexing(TypeDenoter arrType) {
@@ -336,6 +338,8 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		else if (t1.kind == TypeKind.CLASS && t2.kind == TypeKind.NULL)
 			return Type.NULL;
 		else if (t2.kind == TypeKind.CLASS && t1.kind == TypeKind.NULL)
+			return Type.NULL;
+		else if (t1.kind == TypeKind.NULL && t2.kind == TypeKind.NULL)
 			return Type.NULL;
 		else if (t1.kind == TypeKind.ARRAY && t2.kind == TypeKind.ARRAY)
 			return checkEquals(t1.ixType, t2.ixType, ast);

@@ -1,9 +1,7 @@
 package miniJava.ContextualAnalyzer;
 
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 import miniJava.AbstractSyntaxTrees.BaseType;
 import miniJava.AbstractSyntaxTrees.BlockStmt;
@@ -27,29 +25,29 @@ import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class ScopeStack {
+	public static final ClassDecl UNSUPPORTED_STRING = new ClassDecl("String", new FieldDeclList(), new MethodDeclList());
 
 	// Stack of all current scopes
 	private Deque<Scope> scopes;
-	private Map<String, ClassDecl> classes;
 	
 	public ScopeStack() {
 		// Use linked list to get correct iteration order
 		this.scopes = new LinkedList<Scope>();
-		this.classes = new HashMap<String, ClassDecl>();
 		
 		createLevel0();
 	}
 	
 	private void createLevel0() {
-		// Force level 0
-		this.scopes.push(new Scope(null, true, Scope.Kind.PACKAGE));
+		// Force hide-able package layer
+		this.scopes.push(new Scope(null, true, Scope.Kind.PREDEFINED));
 		
 		// class System
 		FieldDeclList SystemFields = new FieldDeclList();
-		SystemFields.add(new FieldDecl(false, true, 
+		FieldDecl FSystemOut = new FieldDecl(false, true, 
 				new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, "_PrintStream", null, null)), null), 
-				"out", null));
-		this.classes.put("System", new ClassDecl("System", SystemFields, new MethodDeclList()));
+				"out", null);
+		SystemFields.add(FSystemOut);
+		this.declare(new ClassDecl("System", SystemFields, new MethodDeclList()));
 		
 		// class _PrintStream
 		MethodDeclList PrintStreamMethods = new MethodDeclList();
@@ -58,10 +56,17 @@ public class ScopeStack {
 		PrintStreamMethods.add(new MethodDecl(
 				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "println"),
 				PrintLnParams, new StatementList()));
-		this.classes.put("_PrintStream", new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods));
+		ClassDecl PrintStream = new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods);
+		this.declare(PrintStream);
 		
 		// class String
-		this.classes.put("String", new ClassDecl("String", new FieldDeclList(), new MethodDeclList()));
+		this.declare(UNSUPPORTED_STRING);
+		
+		// Visit types
+		((ClassType) FSystemOut.type).setDecl(PrintStream);
+		
+		// Force main package layer
+		this.scopes.push(new Scope(null, true, Scope.Kind.PACKAGE));
 	}
 	
 	public void openScope(ClassDecl decl) {
@@ -103,10 +108,6 @@ public class ScopeStack {
 	 * @param decl The declaration AST object to add
 	 */
 	public void declare(Declaration decl) {		
-		// Keep track of all ClassDecls
-		if (decl instanceof ClassDecl && !classes.containsKey(decl.name))
-			this.classes.put(decl.name, (ClassDecl) decl);
-		
 		Scope scope = this.getActiveScope();
 		if (scope.kind.depth >= Scope.Kind.BLOCKSTMT.depth) {
 			// Check that local variable isn't hiding another local variable or parameter
@@ -147,10 +148,6 @@ public class ScopeStack {
 		return decl;
 	}
 	
-	public Iterable<ClassDecl> getClasses() {
-		return this.classes.values();
-	}
-	
 	public ClassDecl getCurrentClass() {
 		for (Scope s: this.scopes) {
 			if (s.kind == Scope.Kind.CLASS)
@@ -167,7 +164,18 @@ public class ScopeStack {
 		return null;
 	}
 	
+	/**
+	 * Try to get the class for the given identifier
+	 * @param ident The identifier
+	 * @return The class or null if not found
+	 */
 	public ClassDecl getClass(Identifier ident) {
-		return this.classes.get(ident.spelling);
+		for (Scope s: this.scopes) {
+			if (s.kind == Scope.Kind.PACKAGE || s.kind == Scope.Kind.PREDEFINED) {
+				Declaration decl = s.get(ident.spelling);
+				if (decl instanceof ClassDecl) return (ClassDecl) decl;
+			}
+		}
+		return null;
 	}
 }

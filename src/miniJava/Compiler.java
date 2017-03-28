@@ -35,17 +35,17 @@ public class Compiler {
 				new ASTDisplay().showTree(pck);
 				if (new IdentificationVisitor().visit(pck)) {
 					TypeErrors errs = new TypeVisitor().visit(pck);
-					if (errs.size() == 0)
+					if (errs.size() == 0) {
 						System.exit(0);
-					else {
+					} else {
 						for (TypeException e: errs) {
 							System.out.println(e.getMessage());
 						}
 						System.exit(4);
 					}
-				}
-				else 
+				} else {
 					System.exit(4);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -10,6 +10,7 @@ import miniJava.AbstractSyntaxTrees.CallExpr;
 import miniJava.AbstractSyntaxTrees.CallStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.ClassType;
+import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.Expression;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
 import miniJava.AbstractSyntaxTrees.IdRef;
@@ -33,12 +34,15 @@ import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.ThisRef;
+import miniJava.AbstractSyntaxTrees.TypeDenoter;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
 import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
 import miniJava.AbstractSyntaxTrees.Visitor;
 import miniJava.AbstractSyntaxTrees.WhileStmt;
+import miniJava.ContextualAnalyzer.Exceptions.ArrayIdentifictionException;
 import miniJava.ContextualAnalyzer.Exceptions.IdentificationException;
+import miniJava.ContextualAnalyzer.Exceptions.LefthandThisException;
 import miniJava.ContextualAnalyzer.Exceptions.NotVisibleException;
 import miniJava.ContextualAnalyzer.Exceptions.StaticThisException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
@@ -48,9 +52,6 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	public boolean visit(Package prog) {
 		try {
 			ScopeStack scope = new ScopeStack();
-			
-			// Visit predefined classes
-			visitClassDeclList(scope.getClasses(), scope);
 			
 			// Visit package classes
 			visitPackage(prog, scope);
@@ -65,17 +66,11 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	public Object visitPackage(Package prog, ScopeStack scope) {
 		if (scope == null) scope = new ScopeStack();
 		
-		visitClassDeclList(prog.classDeclList, scope);
-		
-		return null;
-	}
-	
-	private void visitClassDeclList(Iterable<ClassDecl> cdl, ScopeStack scope) {
-		for (ClassDecl c: cdl)
+		for (ClassDecl c: prog.classDeclList)
 			scope.declare(c);
 		
 		// Visit types of all publicly accessible variables in each class (don't add to scope yet)
-		for (ClassDecl c: cdl) {
+		for (ClassDecl c: prog.classDeclList) {
 			for (FieldDecl fd: c.fieldDeclList)
 				fd.type.visit(this, scope);
 			for (MethodDecl md: c.methodDeclList)
@@ -83,8 +78,10 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		}
 		
 		// Visit all publicly accessible classes
-		for (ClassDecl c: cdl)
+		for (ClassDecl c: prog.classDeclList)
 			c.visit(this, scope);
+		
+		return null;
 	}
 
 	@Override
@@ -181,6 +178,9 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitAssignStmt(AssignStmt stmt, ScopeStack scope) {
+		if (stmt.ref instanceof ThisRef)
+			throw new LefthandThisException((ThisRef) stmt.ref);
+		
 		stmt.ref.visit(this, scope); // left-hand
 		stmt.val.visit(this, scope); // right-hand
 		return null;
@@ -197,7 +197,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	@Override
 	public Object visitReturnStmt(ReturnStmt stmt, ScopeStack scope) {
 		stmt.wrappingMethod = scope.getCurrentMethod();
-		stmt.returnExpr.visit(this, scope);	
+		if (stmt.returnExpr != null) stmt.returnExpr.visit(this, scope);	
 		return null;
 	}
 
@@ -290,7 +290,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 
 	@Override
 	public Object visitIxIdRef(IxIdRef ref, ScopeStack scope) {
-		ref.setDecl(scope.lookup(ref.id));
+		Declaration decl = scope.lookup(ref.id);
+		if (!(decl.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
+		
+		// Want to link to element of array, not array itself
+		TypeDenoter eltType = ((ArrayType) decl.type).eltType;
+		ref.setDecl(new VarDecl(eltType, "[...]"));
+		
 		ref.indexExpr.visit(this, scope);
 		return null;
 	}
@@ -314,7 +320,11 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
 		MemberDecl member = ref.ref.getDecl().getMember(ref.id);
-		ref.setDecl(member);
+		if (!(member.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
+		
+		// Want to link to element of array, not array itself
+		TypeDenoter eltType = ((ArrayType) member.type).eltType;
+		ref.setDecl(new VarDecl(eltType, "[...]"));
 		
 		if (member.isPrivate) checkPrivate(ref, member, scope);		
 		

@@ -5,6 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class Declaration extends AST {
@@ -26,7 +27,9 @@ public abstract class Declaration extends AST {
 	}
 	
 	public MemberDecl getMember(Identifier ident) {
-		return type.getMember(ident);
+		MemberDecl decl = type.getMember(ident);
+		if (decl == null) throw new UndefinedReferenceException(ident);
+		return decl;
 	}
 	
 	public abstract boolean allowStaticReference();

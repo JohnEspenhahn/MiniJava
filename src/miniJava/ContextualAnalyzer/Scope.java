@@ -38,7 +38,7 @@ public class Scope {
 	}
 	
 	public enum Kind {
-		PACKAGE(0), CLASS(1), METHOD(2), BLOCKSTMT(3), STMT(4);
+		PREDEFINED(-1), PACKAGE(0), CLASS(1), METHOD(2), BLOCKSTMT(3), STMT(4);
 		
 		public final int depth;
 		Kind(int depth) {
