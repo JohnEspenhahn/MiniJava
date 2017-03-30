@@ -299,7 +299,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		
 		// Want to link to element of array, not array itself
 		TypeDenoter eltType = ((ArrayType) decl.type).eltType;
-		ref.setDecl(new VarDecl(eltType, "[...]"));
+		ref.setDecl(new VarDecl(eltType, "[...]", ref.posn));
 		
 		ref.indexExpr.visit(this, scope);
 		return null;
@@ -328,7 +328,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		
 		// Want to link to element of array, not array itself
 		TypeDenoter eltType = ((ArrayType) member.type).eltType;
-		ref.setDecl(new VarDecl(eltType, "[...]"));
+		ref.setDecl(new VarDecl(eltType, "[...]", ref.posn));
 		
 		if (member.isPrivate) checkPrivate(ref, member, scope);		
 		

@@ -11,6 +11,7 @@ import miniJava.AbstractSyntaxTrees.CallExpr;
 import miniJava.AbstractSyntaxTrees.CallStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.ClassType;
+import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
 import miniJava.AbstractSyntaxTrees.IdRef;
 import miniJava.AbstractSyntaxTrees.Identifier;
@@ -31,7 +32,6 @@ import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.ThisRef;
-import miniJava.AbstractSyntaxTrees.TypeDenoter;
 import miniJava.AbstractSyntaxTrees.TypeKind;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
 import miniJava.AbstractSyntaxTrees.VarDecl;
@@ -75,7 +75,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		for (Statement s: md.statementList) {
 			s.visit(this, null);
 		}
-		return md.type.visit(this, null);
+		return Type.UNSUPPORTED;
 	}
 
 	@Override
@@ -256,7 +256,11 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 	@Override
 	public Type visitIdRef(IdRef ref, Object arg) {
-		return ref.getDecl().type.visit(this, null);
+		Declaration decl = ref.getDecl();
+		if (decl instanceof MethodDecl)
+			return Type.UNSUPPORTED;
+		else
+			return decl.type.visit(this, null);
 	}
 
 	@Override
@@ -264,29 +268,26 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		Type ixType = ref.indexExpr.visit(this, null);
 		checkEquals(ixType, Type.INT, ref.indexExpr);
 		
-		TypeDenoter arrType = ref.getDecl().type;
-		return visitIndexing(arrType);
+		Declaration decl = ref.getDecl();
+		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else return decl.type.visit(this, null);
 	}
 
 	@Override
 	public Type visitQRef(QRef ref, Object arg) {
-		return ref.getDecl().type.visit(this, null);
+		Declaration decl = ref.getDecl();
+		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else return decl.type.visit(this, null);
 	}
 
 	@Override
 	public Type visitIxQRef(IxQRef ref, Object arg) {
 		Type ixType = ref.ixExpr.visit(this, null);
 		checkEquals(ixType, Type.INT, ref.ixExpr);
-		return ref.getDecl().type.visit(this, null);
-	}
-	
-	private Type visitIndexing(TypeDenoter arrType) {
-		if (!(arrType instanceof ArrayType)) {
-			this.errors.add(new TypeException("The type of this expression must be an array type but it resolved to " + arrType, arrType));
-			return Type.ERROR;
-		}
-		
-		return ((ArrayType) arrType).eltType.visit(this, null);
+
+		Declaration decl = ref.getDecl();
+		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else return decl.type.visit(this, null);
 	}
 
 	@Override
