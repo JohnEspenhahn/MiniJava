@@ -9,6 +9,8 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ArrayType extends TypeDenoter {
+	private static MemberDecl LENGTH = new FieldDecl(false, false, true, new BaseType(TypeKind.INT), "length");
+	
 	public TypeDenoter eltType;
 	
 	public ArrayType(TypeDenoter eltType) {
@@ -26,7 +28,9 @@ public class ArrayType extends TypeDenoter {
 
 	@Override
 	public MemberDecl getMember(Identifier ident) {
-		// Array has no named members
-		return null;
+		if (ident.spelling.equals("length"))
+			return LENGTH;
+		else 
+			return null;
 	}
 }

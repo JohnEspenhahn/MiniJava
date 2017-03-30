@@ -8,6 +8,9 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 abstract public class MemberDecl extends Declaration {
+	public boolean isPrivate;
+    public boolean isStatic;
+    public boolean isReadonly;
 
 	public MemberDecl(boolean isPrivate, boolean isStatic, TypeDenoter mt, String name) {
 		this(isPrivate, isStatic, mt, name, SourcePosition.ZERO);
@@ -17,6 +20,7 @@ abstract public class MemberDecl extends Declaration {
         super(name, mt, posn);
         this.isPrivate = isPrivate;
         this.isStatic = isStatic;
+        this.isReadonly = false;
     }
     
     public MemberDecl(MemberDecl md, SourcePosition posn){
@@ -28,7 +32,4 @@ abstract public class MemberDecl extends Declaration {
     public boolean allowStaticReference() {
 		return isStatic;
 	}
-    
-    public boolean isPrivate;
-    public boolean isStatic;
 }

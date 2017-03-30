@@ -185,6 +185,9 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		stmt.ref.visit(this, scope); // left-hand
 		if (stmt.ref.getDecl() instanceof MethodDecl)
 			throw new ReadonlyAssignmentException(stmt.ref);
+		else if (stmt.ref.getDecl() instanceof MemberDecl)
+			if (((MemberDecl) stmt.ref.getDecl()).isReadonly)
+				throw new ReadonlyAssignmentException(stmt.ref);
 		
 		stmt.val.visit(this, scope); // right-hand
 		return null;

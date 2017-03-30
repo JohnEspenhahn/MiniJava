@@ -16,6 +16,11 @@ public class FieldDecl extends MemberDecl {
 	public FieldDecl(boolean isPrivate, boolean isStatic, TypeDenoter t, String name, SourcePosition posn) {
 		super(isPrivate, isStatic, t, name, posn);
 	}
+	
+	public FieldDecl(boolean isPrivate, boolean isStatic, boolean isReadonly, TypeDenoter t, String name) {
+		this(isPrivate, isStatic, t, name, null);
+		this.isReadonly = isReadonly;
+	}
 
 	public FieldDecl(MemberDecl md, SourcePosition posn) {
 		super(md, posn);
