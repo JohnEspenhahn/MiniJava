@@ -25,5 +25,10 @@ public class MethodDecl extends MemberDecl {
 	public <A, R> R visit(Visitor<A, R> v, A o) {
 		return v.visitMethodDecl(this, o);
 	}
+	
+	@Override
+	public MemberDecl getMember(Identifier ident) {
+		return null; // Method's don't directly have members (must invoke first)
+	}
 
 }
