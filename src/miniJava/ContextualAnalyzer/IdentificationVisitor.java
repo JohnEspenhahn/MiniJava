@@ -44,6 +44,7 @@ import miniJava.ContextualAnalyzer.Exceptions.ArrayIdentifictionException;
 import miniJava.ContextualAnalyzer.Exceptions.IdentificationException;
 import miniJava.ContextualAnalyzer.Exceptions.LefthandThisException;
 import miniJava.ContextualAnalyzer.Exceptions.NotVisibleException;
+import miniJava.ContextualAnalyzer.Exceptions.ReadonlyAssignmentException;
 import miniJava.ContextualAnalyzer.Exceptions.StaticThisException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 
@@ -182,6 +183,9 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 			throw new LefthandThisException((ThisRef) stmt.ref);
 		
 		stmt.ref.visit(this, scope); // left-hand
+		if (stmt.ref.getDecl() instanceof MethodDecl)
+			throw new ReadonlyAssignmentException(stmt.ref);
+		
 		stmt.val.visit(this, scope); // right-hand
 		return null;
 	}
