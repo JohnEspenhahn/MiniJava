@@ -8,19 +8,19 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class Package extends AST {
+	public ClassDeclList classDeclList;
+	public MethodDecl main;
 
 	public Package(ClassDeclList cdl) {
 		this(cdl, SourcePosition.ZERO);
 	}
-	
-  public Package(ClassDeclList cdl, SourcePosition posn) {
-    super(posn);
-    classDeclList = cdl;
-  }
-    
-    public <A,R> R visit(Visitor<A,R> v, A o) {
-        return v.visitPackage(this, o);
-    }
 
-    public ClassDeclList classDeclList;
+	public Package(ClassDeclList cdl, SourcePosition posn) {
+		super(posn);
+		classDeclList = cdl;
+	}
+
+	public <A, R> R visit(Visitor<A, R> v, A o) {
+		return v.visitPackage(this, o);
+	}
 }

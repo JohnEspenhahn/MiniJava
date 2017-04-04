@@ -35,6 +35,7 @@ import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.ThisRef;
 import miniJava.AbstractSyntaxTrees.TypeDenoter;
+import miniJava.AbstractSyntaxTrees.TypeKind;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
 import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
@@ -45,6 +46,7 @@ import miniJava.ContextualAnalyzer.Exceptions.IdentificationException;
 import miniJava.ContextualAnalyzer.Exceptions.LefthandThisException;
 import miniJava.ContextualAnalyzer.Exceptions.NotVisibleException;
 import miniJava.ContextualAnalyzer.Exceptions.ReadonlyAssignmentException;
+import miniJava.ContextualAnalyzer.Exceptions.ReturnMissingException;
 import miniJava.ContextualAnalyzer.Exceptions.StaticThisException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 
@@ -119,12 +121,32 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 			pd.visit(this, scope);
 		
 		scope.openScope(md.statementList);
-		for (Statement s: md.statementList)
+		for (Statement s: md.statementList) {
 			s.visit(this, scope);
-		scope.closeScope();
+		}
 		
-		scope.closeScope();
+		if (md.statementList.size() > 1) {
+			Statement last = md.statementList.get(md.statementList.size()-1);
+			checkReturn(md, last, scope);
+		} else {
+			checkReturn(md, null, scope);
+		}
+		scope.closeScope(); // statementList
+		
+		scope.closeScope(); // Method decl
 		return null;
+	}
+	
+	private void checkReturn(MethodDecl md, Statement last, ScopeStack scope) {
+		boolean isVoid = (md.type.typeKind == TypeKind.VOID);
+		if (last == null || !(last instanceof ReturnStmt)) {
+			if (isVoid) {
+				ReturnStmt rtn = new ReturnStmt(null);
+				md.statementList.add(rtn);
+				
+				rtn.visit(this, scope);
+			} else throw new ReturnMissingException(md, md.posn);
+		}
 	}
 
 	@Override

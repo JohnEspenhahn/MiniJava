@@ -1,5 +1,8 @@
 package miniJava.ContextualAnalyzer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import miniJava.AbstractSyntaxTrees.AST;
 import miniJava.AbstractSyntaxTrees.ArrayType;
 import miniJava.AbstractSyntaxTrees.AssignStmt;
@@ -42,10 +45,16 @@ import miniJava.ContextualAnalyzer.Exceptions.TypeException;
 
 public class TypeVisitor implements Visitor<Object, Type> {
 	private TypeErrors errors;
+	private List<MethodDecl> mains;
 
 	public TypeErrors visit(Package prog) {
+		this.mains = new ArrayList<MethodDecl>();
 		this.errors = new TypeErrors();	
 		visitPackage(prog, null);		
+		
+		if (this.mains.size() == 1)
+			prog.main = mains.get(0);
+		
 		return errors;
 	}
 	
@@ -61,6 +70,19 @@ public class TypeVisitor implements Visitor<Object, Type> {
 	public Type visitClassDecl(ClassDecl cd, Object arg) {
 		for (MethodDecl method: cd.methodDeclList) {
 			method.visit(this, null);
+			
+			// Check if public static void main(String[])
+			if (method.isStatic && !method.isPrivate && method.name.equals("main")
+					&& method.type.typeKind == TypeKind.VOID && method.parameterDeclList.size() == 1) {
+				ParameterDecl decl = method.parameterDeclList.get(0);
+				if (decl.type instanceof ArrayType) {
+					ArrayType type = (ArrayType) decl.type;
+					if (type.eltType instanceof ClassType 
+							&& ((ClassType) type.eltType).getDecl() == ScopeStack.UNSUPPORTED_STRING) {
+						mains.add(method);
+					}
+				}
+			}
 		}
 		return new Type(TypeKind.CLASS, cd);
 	}
