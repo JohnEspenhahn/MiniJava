@@ -31,20 +31,20 @@ public class Compiler {
 			miniJava.AbstractSyntaxTrees.Package pck = p.parseProgram(false);
 			if (pck == null) {
 				System.exit(4);
-			} else if (pck.main == null) {
-				System.out.print("No main method found");
-				System.exit(4);
 			} else {
 				new ASTDisplay().showTree(pck);
 				if (new IdentificationVisitor().visit(pck)) {
 					TypeErrors errs = new TypeVisitor().visit(pck);
-					if (errs.size() == 0) {
-						System.exit(0);
-					} else {
+					if (pck.main == null) {
+						System.out.print("No main method found");
+						System.exit(4);
+					} else if (errs.size() > 0) {
 						for (TypeException e: errs) {
 							System.out.println(e.getMessage());
 						}
 						System.exit(4);
+					} else {
+						System.exit(0); // ok
 					}
 				} else {
 					System.exit(4);
