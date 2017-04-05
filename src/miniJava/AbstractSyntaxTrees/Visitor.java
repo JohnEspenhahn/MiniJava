@@ -20,6 +20,8 @@ public interface Visitor<ArgType,ResultType> {
     public ResultType visitMethodDecl(MethodDecl md, ArgType arg);
     public ResultType visitParameterDecl(ParameterDecl pd, ArgType arg);
     public ResultType visitVarDecl(VarDecl decl, ArgType arg);
+    public ResultType visitThisDecl(ThisDecl decl, ArgType arg);
+    public ResultType visitArrayIdxDecl(ArrayIdxDecl decl, ArgType arg);
  
   // Types
     public ResultType visitBaseType(BaseType type, ArgType arg);

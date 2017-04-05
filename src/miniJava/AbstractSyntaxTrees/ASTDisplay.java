@@ -147,6 +147,16 @@ public class ASTDisplay implements Visitor<String,Object> {
         show(indent(arg), quote(vd.name) + " varname");
         return null;
     }
+    
+    public Object visitThisDecl(ThisDecl td, String arg) {
+    	show(arg, td);
+    	return null;
+    }
+    
+    public Object visitArrayIdxDecl(ArrayIdxDecl aid, String arg) {
+    	show(arg, aid);
+    	return null;
+    }
  
 	
 	///////////////////////////////////////////////////////////////////////////////

@@ -7,3 +7,4 @@ test_private.mjava
 test_static.mjava
 test.mjava
 test_indexing.mjava
+*.mjava

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import miniJava.AbstractSyntaxTrees.AST;
+import miniJava.AbstractSyntaxTrees.ArrayIdxDecl;
 import miniJava.AbstractSyntaxTrees.ArrayType;
 import miniJava.AbstractSyntaxTrees.AssignStmt;
 import miniJava.AbstractSyntaxTrees.BaseType;
@@ -34,6 +35,7 @@ import miniJava.AbstractSyntaxTrees.QRef;
 import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
+import miniJava.AbstractSyntaxTrees.ThisDecl;
 import miniJava.AbstractSyntaxTrees.ThisRef;
 import miniJava.AbstractSyntaxTrees.TypeKind;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
@@ -110,6 +112,17 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		return decl.type.visit(this, null);
 	}
 
+	@Override 
+	public Type visitThisDecl(ThisDecl decl, Object arg) {
+		return decl.type.visit(this, null);
+	}
+	
+	@Override
+	public Type visitArrayIdxDecl(ArrayIdxDecl decl, Object arg) {
+		return decl.type.visit(this, null);
+	}
+	
+	
 	@Override
 	public Type visitBaseType(BaseType type, Object arg) {
 		return new Type(type.typeKind);

@@ -1,5 +1,6 @@
 package miniJava.ContextualAnalyzer;
 
+import miniJava.AbstractSyntaxTrees.ArrayIdxDecl;
 import miniJava.AbstractSyntaxTrees.ArrayType;
 import miniJava.AbstractSyntaxTrees.AssignStmt;
 import miniJava.AbstractSyntaxTrees.BaseType;
@@ -33,8 +34,8 @@ import miniJava.AbstractSyntaxTrees.QualifiedRef;
 import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
+import miniJava.AbstractSyntaxTrees.ThisDecl;
 import miniJava.AbstractSyntaxTrees.ThisRef;
-import miniJava.AbstractSyntaxTrees.TypeDenoter;
 import miniJava.AbstractSyntaxTrees.TypeKind;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
 import miniJava.AbstractSyntaxTrees.VarDecl;
@@ -125,7 +126,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 			s.visit(this, scope);
 		}
 		
-		if (md.statementList.size() > 1) {
+		if (md.statementList.size() > 0) {
 			Statement last = md.statementList.get(md.statementList.size()-1);
 			checkReturn(md, last, scope);
 		} else {
@@ -160,6 +161,16 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		scope.declare(decl);
 		decl.type.visit(this, scope);
 		return null;
+	}
+	
+	@Override
+	public Object visitThisDecl(ThisDecl decl, ScopeStack scope) {
+		return null; // Copied type from class, so don't need to visit
+	}
+	
+	@Override
+	public Object visitArrayIdxDecl(ArrayIdxDecl decl, ScopeStack scope) {
+		return null; // Copied type from array, so don't need to visit
 	}
 
 	@Override
@@ -307,7 +318,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		// Don't allow 'this' in static scopes
 		if (scope.inStatic()) throw new StaticThisException(ref);
 		
-		ref.setDecl(new VarDecl(scope.getCurrentClass().type, "this"));
+		ref.setDecl(new ThisDecl((ClassType) scope.getCurrentClass().type));
 		return null;
 	}
 
@@ -323,8 +334,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		if (!(decl.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
 		
 		// Want to link to element of array, not array itself
-		TypeDenoter eltType = ((ArrayType) decl.type).eltType;
-		ref.setDecl(new VarDecl(eltType, "[...]", ref.posn));
+		ref.setDecl(new ArrayIdxDecl((ArrayType) decl.type, ref.posn));
 		
 		ref.indexExpr.visit(this, scope);
 		return null;
@@ -352,8 +362,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		if (!(member.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
 		
 		// Want to link to element of array, not array itself
-		TypeDenoter eltType = ((ArrayType) member.type).eltType;
-		ref.setDecl(new VarDecl(eltType, "[...]", ref.posn));
+		ref.setDecl(new ArrayIdxDecl((ArrayType) member.type, ref.posn));
 		
 		if (member.isPrivate) checkPrivate(ref, member, scope);		
 		
