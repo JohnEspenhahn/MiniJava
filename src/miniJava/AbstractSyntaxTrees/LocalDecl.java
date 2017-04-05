@@ -8,6 +8,7 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class LocalDecl extends Declaration {
+	private int lb_offset;
 	
 	public LocalDecl(String name, TypeDenoter t) {
 		this(name, t, SourcePosition.ZERO);
@@ -15,11 +16,19 @@ public abstract class LocalDecl extends Declaration {
 	
 	public LocalDecl(String name, TypeDenoter t, SourcePosition posn){
 		super(name,t,posn);
+		this.lb_offset = 0;
 	}
 	
 	@Override
 	public boolean allowStaticReference() {
 		return true;
 	}
-
+	
+	public void setLocalOffset(int offset) {
+		this.lb_offset = offset;
+	}
+	
+	public int getLocalOffset() {
+		return this.lb_offset;
+	}
 }
