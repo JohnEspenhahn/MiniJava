@@ -3,8 +3,8 @@ package miniJava.ContextualAnalyzer.Exceptions;
 import miniJava.AbstractSyntaxTrees.AST;
 import miniJava.ContextualAnalyzer.Type;
 
+@SuppressWarnings("serial")
 public class TypeException extends RuntimeException {
-	private static final long serialVersionUID = 8960691748436840853L;
 
 	public TypeException(Type t1, Type t2, AST ast) {
 		this("Incompatible types " + t1 + " and " + t2, ast);

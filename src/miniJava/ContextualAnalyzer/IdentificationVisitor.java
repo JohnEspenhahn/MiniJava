@@ -51,14 +51,15 @@ import miniJava.ContextualAnalyzer.Exceptions.ReturnMissingException;
 import miniJava.ContextualAnalyzer.Exceptions.StaticThisException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 
-public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
+public class IdentificationVisitor extends Visitor {
+	private ScopeStack scope;
 	
 	public boolean visit(Package prog) {
 		try {
-			ScopeStack scope = new ScopeStack();
+			scope = new ScopeStack();
 			
 			// Visit package classes
-			visitPackage(prog, scope);
+			visitPackage(prog, null);
 			return true;
 		} catch (IdentificationException e) {
 			System.out.println(e.getMessage());
@@ -67,7 +68,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 	
 	@Override
-	public Object visitPackage(Package prog, ScopeStack scope) {
+	public Object visitPackage(Package prog, Object arg) {
 		if (scope == null) scope = new ScopeStack();
 		
 		for (ClassDecl c: prog.classDeclList)
@@ -89,7 +90,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitClassDecl(ClassDecl cd, ScopeStack scope) {
+	public Object visitClassDecl(ClassDecl cd, Object arg) {
 		scope.openScope(cd);
 		
 		cd.type.visit(this, scope);
@@ -108,13 +109,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitFieldDecl(FieldDecl fd, ScopeStack scope) {
+	public Object visitFieldDecl(FieldDecl fd, Object arg) {
 		fd.type.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitMethodDecl(MethodDecl md, ScopeStack scope) {
+	public Object visitMethodDecl(MethodDecl md, Object arg) {
 		scope.openScope(md);
 		for (ParameterDecl pd: md.parameterDeclList)
 			scope.declare(pd);
@@ -138,7 +139,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		return null;
 	}
 	
-	private void checkReturn(MethodDecl md, Statement last, ScopeStack scope) {
+	private void checkReturn(MethodDecl md, Statement last, Object arg) {
 		boolean isVoid = (md.type.typeKind == TypeKind.VOID);
 		if (last == null || !(last instanceof ReturnStmt)) {
 			if (isVoid) {
@@ -151,35 +152,35 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitParameterDecl(ParameterDecl pd, ScopeStack scope) {
+	public Object visitParameterDecl(ParameterDecl pd, Object arg) {
 		pd.type.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitVarDecl(VarDecl decl, ScopeStack scope) {
+	public Object visitVarDecl(VarDecl decl, Object arg) {
 		scope.declare(decl);
 		decl.type.visit(this, scope);
 		return null;
 	}
 	
 	@Override
-	public Object visitThisDecl(ThisDecl decl, ScopeStack scope) {
+	public Object visitThisDecl(ThisDecl decl, Object arg) {
 		return null; // Copied type from class, so don't need to visit
 	}
 	
 	@Override
-	public Object visitArrayIdxDecl(ArrayIdxDecl decl, ScopeStack scope) {
+	public Object visitArrayIdxDecl(ArrayIdxDecl decl, Object arg) {
 		return null; // Copied type from array, so don't need to visit
 	}
 
 	@Override
-	public Object visitBaseType(BaseType type, ScopeStack scope) {
+	public Object visitBaseType(BaseType type, Object arg) {
 		return null;
 	}
 
 	@Override
-	public Object visitClassType(ClassType type, ScopeStack scope) {
+	public Object visitClassType(ClassType type, Object arg) {
 		// Only link class types to class declarations
 		ClassDecl classDecl = scope.getClass(type.className);
 		type.setDecl(classDecl);
@@ -187,13 +188,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitArrayType(ArrayType type, ScopeStack scope) {
+	public Object visitArrayType(ArrayType type, Object arg) {
 		type.eltType.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitBlockStmt(BlockStmt stmt, ScopeStack scope) {
+	public Object visitBlockStmt(BlockStmt stmt, Object arg) {
 		scope.openScope(stmt);
 		for (Statement s: stmt.sl)
 			s.visit(this, scope);
@@ -202,7 +203,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitVardeclStmt(VarDeclStmt stmt, ScopeStack scope) {
+	public Object visitVardeclStmt(VarDeclStmt stmt, Object arg) {
 		stmt.varDecl.visit(this, scope);
 		stmt.varDecl.being_declared = true;		
 		stmt.initExp.visit(this, scope);
@@ -211,7 +212,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitAssignStmt(AssignStmt stmt, ScopeStack scope) {
+	public Object visitAssignStmt(AssignStmt stmt, Object arg) {
 		if (stmt.ref instanceof ThisRef)
 			throw new LefthandThisException((ThisRef) stmt.ref);
 		
@@ -227,7 +228,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitCallStmt(CallStmt stmt, ScopeStack scope) {
+	public Object visitCallStmt(CallStmt stmt, Object arg) {
 		stmt.methodRef.visit(this, scope);
 		for (Expression e: stmt.argList)
 			e.visit(this, scope);
@@ -235,14 +236,14 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitReturnStmt(ReturnStmt stmt, ScopeStack scope) {
+	public Object visitReturnStmt(ReturnStmt stmt, Object arg) {
 		stmt.wrappingMethod = scope.getCurrentMethod();
 		if (stmt.returnExpr != null) stmt.returnExpr.visit(this, scope);	
 		return null;
 	}
 
 	@Override
-	public Object visitIfStmt(IfStmt stmt, ScopeStack scope) {
+	public Object visitIfStmt(IfStmt stmt, Object arg) {
 		stmt.cond.visit(this, scope);
 		
 		scope.openScope(stmt.thenStmt);
@@ -259,7 +260,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitWhileStmt(WhileStmt stmt, ScopeStack scope) {
+	public Object visitWhileStmt(WhileStmt stmt, Object arg) {
 		stmt.cond.visit(this, scope);
 		
 		scope.openScope(stmt.body);
@@ -269,26 +270,26 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitUnaryExpr(UnaryExpr expr, ScopeStack scope) {
+	public Object visitUnaryExpr(UnaryExpr expr, Object arg) {
 		expr.expr.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitBinaryExpr(BinaryExpr expr, ScopeStack scope) {
+	public Object visitBinaryExpr(BinaryExpr expr, Object arg) {
 		expr.left.visit(this, scope);
 		expr.right.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitRefExpr(RefExpr expr, ScopeStack scope) {
+	public Object visitRefExpr(RefExpr expr, Object arg) {
 		expr.ref.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitCallExpr(CallExpr expr, ScopeStack scope) {
+	public Object visitCallExpr(CallExpr expr, Object arg) {
 		expr.methodRef.visit(this, scope);
 		for (Expression e: expr.argList)
 			e.visit(this, scope);
@@ -296,25 +297,25 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitLiteralExpr(LiteralExpr expr, ScopeStack scope) {
+	public Object visitLiteralExpr(LiteralExpr expr, Object arg) {
 		return null;
 	}
 
 	@Override
-	public Object visitNewObjectExpr(NewObjectExpr expr, ScopeStack scope) {
+	public Object visitNewObjectExpr(NewObjectExpr expr, Object arg) {
 		expr.classtype.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitNewArrayExpr(NewArrayExpr expr, ScopeStack scope) {
+	public Object visitNewArrayExpr(NewArrayExpr expr, Object arg) {
 		expr.eltType.visit(this, scope);
 		expr.sizeExpr.visit(this, scope);
 		return null;
 	}
 
 	@Override
-	public Object visitThisRef(ThisRef ref, ScopeStack scope) {
+	public Object visitThisRef(ThisRef ref, Object arg) {
 		// Don't allow 'this' in static scopes
 		if (scope.inStatic()) throw new StaticThisException(ref);
 		
@@ -323,13 +324,13 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitIdRef(IdRef ref, ScopeStack scope) {
+	public Object visitIdRef(IdRef ref, Object arg) {
 		ref.setDecl(scope.lookup(ref.id));
 		return null;
 	}
 
 	@Override
-	public Object visitIxIdRef(IxIdRef ref, ScopeStack scope) {
+	public Object visitIxIdRef(IxIdRef ref, Object arg) {
 		Declaration decl = scope.lookup(ref.id);
 		if (!(decl.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
 		
@@ -341,7 +342,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitQRef(QRef ref, ScopeStack scope) {
+	public Object visitQRef(QRef ref, Object arg) {
 		ref.ref.visit(this, scope); // Bottom up
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
@@ -354,7 +355,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitIxQRef(IxQRef ref, ScopeStack scope) {
+	public Object visitIxQRef(IxQRef ref, Object arg) {
 		ref.ref.visit(this, scope); // Bottom up
 		
 		if (ref.ref.getDecl() == null) throw new UndefinedReferenceException(ref.ref);
@@ -370,7 +371,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		return null;
 	}
 	
-	private void checkPrivate(QualifiedRef ref, MemberDecl member, ScopeStack scope) {
+	private void checkPrivate(QualifiedRef ref, MemberDecl member, Object arg) {
 		if (member.isPrivate) {
 			// Check if this member is the member from the current class with the same name (allow nonstatic)
 			MemberDecl currentclass_member = scope.getCurrentClass().getMember(ref.getIdent(), false);
@@ -380,27 +381,27 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitIdentifier(Identifier id, ScopeStack scope) {
+	public Object visitIdentifier(Identifier id, Object arg) {
 		throw new RuntimeException("Why am I visiting an Identifier?");
 	}
 
 	@Override
-	public Object visitOperator(Operator op, ScopeStack scope) {
+	public Object visitOperator(Operator op, Object arg) {
 		return null;
 	}
 
 	@Override
-	public Object visitIntLiteral(IntLiteral num, ScopeStack scope) {
+	public Object visitIntLiteral(IntLiteral num, Object arg) {
 		return null;
 	}
 
 	@Override
-	public Object visitBooleanLiteral(BooleanLiteral bool, ScopeStack scope) {
+	public Object visitBooleanLiteral(BooleanLiteral bool, Object arg) {
 		return null;
 	}
 
 	@Override
-	public Object visitNullLiteral(NullLiteral nlit, ScopeStack scope) {
+	public Object visitNullLiteral(NullLiteral nlit, Object arg) {
 		return null;
 	}
 

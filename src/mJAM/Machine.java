@@ -5,7 +5,7 @@ package mJAM;
  * @author prins
  * @version COMP 520 V2.2
  */
-public final class Machine {
+public class Machine {
 	
 	/**
 	 * mJAM instructions
@@ -96,15 +96,15 @@ public final class Machine {
 
 
 // range for int constants
-  public final static long
+  public static long
     minintRep = -2147483648,
     maxintRep =  2147483647;
 
   
   // CODE STORE REGISTERS
-  public final static int CB = 0; // start of code space
-  public final static int PB = 1024; // size of code space reserved for instructions
-  public final static int PT = PB + Prim.values().length;  // code space reserved for primitives
+  public static int CB = 0; // start of code space
+  public static int PB = 1024; // size of code space reserved for instructions
+  public static int PT = PB + Prim.values().length;  // code space reserved for primitives
 
   // CODE STORE
   public static Instruction[] code = new Instruction[PB];
@@ -220,7 +220,7 @@ public static void patch(int addr, int displacement) {
 
 // DATA REPRESENTATION
 
-  public final static int
+  public static int
     booleanSize = 1,
     characterSize = 1,
     integerSize = 1,

@@ -19,7 +19,7 @@ public class NewArrayExpr extends NewExpr
         sizeExpr = e;
     }
     
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitNewArrayExpr(this, o);
     }
 

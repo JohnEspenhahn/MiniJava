@@ -19,7 +19,7 @@ public class VarDeclStmt extends Statement
         initExp = e;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitVardeclStmt(this, o);
     }
 

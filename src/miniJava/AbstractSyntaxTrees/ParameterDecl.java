@@ -17,7 +17,7 @@ public class ParameterDecl extends LocalDecl {
 		super(name, t, posn);
 	}
 	
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
         return v.visitParameterDecl(this, o);
     }
 	

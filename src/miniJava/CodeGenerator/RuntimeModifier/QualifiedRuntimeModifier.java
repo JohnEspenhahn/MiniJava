@@ -3,7 +3,7 @@ package miniJava.CodeGenerator.RuntimeModifier;
 import miniJava.AbstractSyntaxTrees.AST;
 import miniJava.AbstractSyntaxTrees.Visitor;
 
-public abstract class QualifiedRuntimeModifier implements RuntimeModifier {
+public abstract class QualifiedRuntimeModifier extends RuntimeModifier {
 	private RuntimeModifier base;
 	private RuntimeOffsetGenerator offset;
 	
@@ -13,7 +13,7 @@ public abstract class QualifiedRuntimeModifier implements RuntimeModifier {
 	}
 
 	@Override
-	public void store(Visitor<Object,Object> visitor, AST value) {
+	public void store(Visitor visitor, AST value) {
 		base.load(visitor);
 		offset.load(visitor);
 		value.visit(visitor, null);
@@ -21,7 +21,7 @@ public abstract class QualifiedRuntimeModifier implements RuntimeModifier {
 	}
 
 	@Override
-	public void load(Visitor<Object,Object> visitor) {
+	public void load(Visitor visitor) {
 		base.load(visitor);
 		offset.load(visitor);
 		emitLoadPrim();

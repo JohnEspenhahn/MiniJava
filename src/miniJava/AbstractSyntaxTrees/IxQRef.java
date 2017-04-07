@@ -25,7 +25,7 @@ public class IxQRef extends QualifiedRef {
 	}
 
 	@Override
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitIxQRef(this, o);
 	}
 	

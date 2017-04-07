@@ -29,7 +29,7 @@ public class SourceFile extends SourceStream {
 				else if (c == eol) line++;
 			}
 			
-			final int startLine = t.getStart().getLine(),
+			int startLine = t.getStart().getLine(),
 					endLine = t.getEnd().getLine(),
 					startCol = t.getStart().getCol(),
 					endCol = t.getEnd().getCol();

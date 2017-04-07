@@ -6,7 +6,6 @@ import java.io.IOException;
 import mJAM.Disassembler;
 import mJAM.Interpreter;
 import mJAM.ObjectFile;
-import miniJava.AbstractSyntaxTrees.ASTDisplay;
 import miniJava.CodeGenerator.CodeGenVisitor;
 import miniJava.ContextualAnalyzer.IdentificationVisitor;
 import miniJava.ContextualAnalyzer.TypeErrors;
@@ -38,7 +37,7 @@ public class Compiler {
 			if (pck == null) {
 				System.exit(4);
 			} else {
-				new ASTDisplay().showTree(pck);
+				// new ASTDisplay().showTree(pck);
 				if (new IdentificationVisitor().visit(pck)) {
 					TypeErrors errs = new TypeVisitor().visit(pck);
 					if (pck.main == null) {

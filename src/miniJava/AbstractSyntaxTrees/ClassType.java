@@ -22,7 +22,7 @@ public class ClassType extends TypeDenoter
         className = cn;
     }
             
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitClassType(this, o);
     }
     

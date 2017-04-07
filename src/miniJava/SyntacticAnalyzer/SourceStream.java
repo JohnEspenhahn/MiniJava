@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class SourceStream {
-	public static final char eol = '\n';
-	public static final char eot = '\u0000';
+	public static char eol = '\n';
+	public static char eot = '\u0000';
 
 	private InputStream stream;
 	private int line, col;

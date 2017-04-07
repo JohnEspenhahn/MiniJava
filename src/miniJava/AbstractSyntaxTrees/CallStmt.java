@@ -19,7 +19,7 @@ public class CallStmt extends Statement
         argList = el;
     }
     
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitCallStmt(this, o);
     }
     

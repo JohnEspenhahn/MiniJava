@@ -20,7 +20,7 @@ public class Package extends AST {
 		classDeclList = cdl;
 	}
 
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitPackage(this, o);
 	}
 }

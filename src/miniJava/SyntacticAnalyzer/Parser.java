@@ -214,20 +214,20 @@ public class Parser {
 	}
 	
 	TypeDenoter parseType() throws SyntaxError {
-		switch (ct.getKind()) {
-		case IDENTIFIER:
+		TokenKind kind = ct.getKind();
+		if (kind == TokenKind.IDENTIFIER) {
 			return parseIdType();
-		case INT: case BOOLEAN:
+		} else if (kind == TokenKind.INT || kind == TokenKind.BOOLEAN) {
 			return parsePrimativeType();
-		default:
-			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, IDENTIFIER, BOOLEAN }, ct);
+		} else {
+			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, IDENTIFIER, BOOLEAN }, ct);	
 		}
 	}
 	
 	TypeDenoter parsePrimativeType() throws SyntaxError {
 		TypeDenoter type;
-		switch (ct.getKind()) {
-		case INT:
+		TokenKind kind = ct.getKind();
+		if (kind == TokenKind.INT) {
 			Token int_token = acceptIt();
 			type = new BaseType(TypeKind.INT, int_token.getStart());
 			if (ct.getKind() == SQR_OPEN) {
@@ -235,12 +235,10 @@ public class Parser {
 				accept(SQR_CLOSE);
 				type = new ArrayType(type, int_token.getStart());
 			}
-			break;
-		case BOOLEAN:
+		} else if (kind == TokenKind.BOOLEAN) {
 			Token bool_token = acceptIt();
 			type = new BaseType(TypeKind.BOOLEAN, bool_token.getStart());
-			break;
-		default:
+		} else {
 			throw new SyntaxError(lexer.getSourceFile(), new TokenKind[] { INT, BOOLEAN }, ct);
 		}
 		
@@ -336,9 +334,10 @@ public class Parser {
 	static { Arrays.sort(STARTERS_STATEMENT); }
 	
 	Statement parseStatement() throws SyntaxError {
-		Token start_token;
-		switch (ct.getKind()) {
-		case CURL_OPEN:
+		Token start_token = null;
+		TokenKind kind = ct.getKind();
+		
+		if (kind == TokenKind.CURL_OPEN) {
 			start_token = acceptIt();
 			StatementList list = new StatementList();
 			while (Arrays.binarySearch(STARTERS_STATEMENT, ct.getKind()) >= 0)
@@ -346,7 +345,7 @@ public class Parser {
 			accept(CURL_CLOSE);
 			
 			return new BlockStmt(list, start_token.getStart());
-		case RETURN:
+		} else if (kind == TokenKind.RETURN) {
 			start_token = acceptIt();
 			Expression return_exp = null;
 			if (Arrays.binarySearch(STARTERS_EXPRESSION, ct.getKind()) >= 0)
@@ -354,7 +353,7 @@ public class Parser {
 			accept(SEMICOLON);
 			
 			return new ReturnStmt(return_exp, start_token.getStart());
-		case IF:
+		} else if (kind == TokenKind.IF) {
 			start_token = acceptIt();
 			accept(PAREN_OPEN);
 			Expression if_cond = parseExpression();
@@ -367,7 +366,7 @@ public class Parser {
 			}
 			
 			return new IfStmt(if_cond, if_then, if_else, start_token.getStart());
-		case WHILE:
+		} else if (kind == TokenKind.WHILE) {
 			start_token = acceptIt();
 			accept(PAREN_OPEN);
 			Expression while_cond = parseExpression();
@@ -375,14 +374,14 @@ public class Parser {
 			Statement while_body = parseStatement();
 			
 			return new WhileStmt(while_cond, while_body, start_token.getStart());
-		case INT: case BOOLEAN:
+		} else if (kind == TokenKind.INT || kind == TokenKind.BOOLEAN) {
 			TypeDenoter prim_type = parsePrimativeType();
 			Token prim_var_id = accept(IDENTIFIER);
 			Expression prim_var_exp = parseAssign();
 			accept(SEMICOLON);
 			
 			return new VarDeclStmt(new VarDecl(prim_type, prim_var_id.getSpelling(), prim_type.posn), prim_var_exp, prim_type.posn);
-		case IDENTIFIER:
+		} else if (kind == TokenKind.IDENTIFIER) {
 			Statement id_stmt = null;
 			Identifier id1 = new Identifier(accept(IDENTIFIER));
 			if (ct.getKind() == SQR_OPEN) {
@@ -414,15 +413,15 @@ public class Parser {
 			accept(SEMICOLON);
 			
 			return id_stmt;
-		case THIS: // TODO We are modifying this - allowed in original grammar, but seems illegal?
+		} else if (kind == TokenKind.THIS) {
 			Token this_token = accept(THIS);
-			id_stmt = parseReferenceStatement(new ThisRef(this_token.getStart()));
+			Statement id_stmt = parseReferenceStatement(new ThisRef(this_token.getStart()));
 			accept(SEMICOLON);
 			
 			return id_stmt;
-		default:
-			throw new SyntaxError(lexer.getSourceFile(), STARTERS_STATEMENT, ct);
 		}
+		
+		throw new SyntaxError(lexer.getSourceFile(), STARTERS_STATEMENT, ct);
 	}
 	
 	Statement parseReferenceStatement(BaseRef base_ref) throws SyntaxError {
@@ -531,23 +530,23 @@ public class Parser {
 	}
 	
 	Expression parseValue() throws SyntaxError {
-		Expression exp;
-		switch (ct.getKind()) {
-		case PAREN_OPEN:
+		Expression exp = null;
+		TokenKind kind = ct.getKind();
+		if (kind == TokenKind.PAREN_OPEN) {
 			accept(PAREN_OPEN);
 			exp = parseExpression();
 			accept(PAREN_CLOSE);
-			return exp;
-		case NUM:
+			return exp;	
+		} else if (kind == TokenKind.NUM) {
 			Token int_lit = acceptIt();
 			return new LiteralExpr(new IntLiteral(int_lit), int_lit.getStart());
-		case NULL:
+		} else if (kind == TokenKind.NULL) {
 			Token null_lit = acceptIt();
 			return new LiteralExpr(new NullLiteral(null_lit), null_lit.getStart());
-		case TRUE: case FALSE:
+		} else if (kind == TokenKind.TRUE || kind == TokenKind.FALSE) {
 			Token bool_lit = acceptIt();
 			return new LiteralExpr(new BooleanLiteral(bool_lit), bool_lit.getStart());
-		case NEW:
+		} else if (kind == TokenKind.NEW) {
 			Token first_token = acceptIt();
 			if (ct.getKind() == IDENTIFIER) {
 				// Object or object array
@@ -570,11 +569,11 @@ public class Parser {
 				exp = new NewArrayExpr(int_arr_type, ix_exp, first_token.getStart());
 			}
 			return exp;
-		case NOT: case MINUS: // unop
+		} else if (kind == TokenKind.NOT || kind == TokenKind.MINUS) { // unop
 			Operator op = new Operator(acceptIt());
 			Expression value = parseValue();
 			return new UnaryExpr(op, value, op.posn);
-		default:
+		} else {
 			Reference ref = parseReference();
 			if (ct.getKind() == PAREN_OPEN) {
 				// Function call

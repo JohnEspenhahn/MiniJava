@@ -4,12 +4,21 @@ import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.TypeKind;
 
 public class Type {
-	public static final Type UNSUPPORTED = new Type(TypeKind.UNSUPPORTED);
-	public static final Type ERROR = new Type(TypeKind.ERROR);
-	public static final Type INT = new Type(TypeKind.INT);
-	public static final Type BOOLEAN = new Type(TypeKind.BOOLEAN);
-	public static final Type VOID = new Type(TypeKind.VOID);
-	public static final Type NULL = new Type(TypeKind.NULL);
+	public static Type UNSUPPORTED;
+	public static Type ERROR;
+	public static Type INT;
+	public static Type BOOLEAN;
+	public static Type VOID;
+	public static Type NULL;
+	
+	static {
+		UNSUPPORTED = new Type(TypeKind.UNSUPPORTED);
+		ERROR = new Type(TypeKind.ERROR);
+		INT = new Type(TypeKind.INT);
+		BOOLEAN = new Type(TypeKind.BOOLEAN);
+		VOID = new Type(TypeKind.VOID);
+		NULL = new Type(TypeKind.NULL);
+	}
 
 	public TypeKind kind;
 	public ClassDecl decl;
@@ -50,21 +59,6 @@ public class Type {
 			throw new RuntimeException("All types of TypeKind CLASS must have a corresponding ClassDecl");
 		} else if (kind == TypeKind.ARRAY && ixType == null) {
 			throw new RuntimeException("All type of TypeKind ARRAY must have an index Type");
-		}
-	}
-	
-	@Override
-	public String toString() {
-		switch (kind) {
-		case INT: return "int";
-		case BOOLEAN: return "boolean";
-		case NULL: return "null";
-		case VOID: return "void";
-		case UNSUPPORTED: return "unsupported";
-		case ERROR: return "error";
-		case CLASS: return decl.name;
-		case ARRAY: return ixType.toString() + "[]";
-		default: return "UNKNOWN TYPE " + this.kind;
 		}
 	}
 	

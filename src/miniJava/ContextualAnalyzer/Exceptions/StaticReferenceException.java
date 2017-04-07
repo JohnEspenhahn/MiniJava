@@ -5,8 +5,8 @@ import miniJava.AbstractSyntaxTrees.Identifier;
 import miniJava.AbstractSyntaxTrees.Reference;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
+@SuppressWarnings("serial")
 public class StaticReferenceException extends IdentificationException {
-	private static final long serialVersionUID = -8271171295518544152L;
 	
 	public StaticReferenceException(Identifier ident) {
 		super("Cannot make a static reference to the non-static member " + ident.spelling, ident.posn);

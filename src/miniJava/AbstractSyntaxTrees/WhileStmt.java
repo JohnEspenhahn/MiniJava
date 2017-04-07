@@ -19,7 +19,7 @@ public class WhileStmt extends Statement
         body = s;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitWhileStmt(this, o);
     }
 

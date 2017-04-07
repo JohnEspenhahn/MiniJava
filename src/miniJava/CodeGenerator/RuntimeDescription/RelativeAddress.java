@@ -1,6 +1,6 @@
 package miniJava.CodeGenerator.RuntimeDescription;
 
-public abstract class RelativeAddress implements RuntimeDescription {
+public abstract class RelativeAddress extends RuntimeDescription {
 	private int offset;
 	
 	public RelativeAddress(int offset) {

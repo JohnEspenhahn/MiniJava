@@ -9,7 +9,11 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ArrayType extends TypeDenoter {
-	public static MemberDecl LENGTH = new FieldDecl(false, false, true, new BaseType(TypeKind.INT), "length");
+	public static MemberDecl LENGTH;
+	
+	static {
+		LENGTH = new FieldDecl(false, false, true, new BaseType(TypeKind.INT), "length");
+	}
 	
 	public TypeDenoter eltType;
 	
@@ -22,7 +26,7 @@ public class ArrayType extends TypeDenoter {
 		this.eltType = eltType;
 	}
 
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitArrayType(this, o);
 	}
 

@@ -19,7 +19,7 @@ public class CallExpr extends Expression
         argList = el;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitCallExpr(this, o);
     }
     

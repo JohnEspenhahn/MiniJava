@@ -3,8 +3,8 @@ package miniJava.ContextualAnalyzer.Exceptions;
 import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
+@SuppressWarnings("serial")
 public class IdentificationException extends RuntimeException {
-	private static final long serialVersionUID = 5177887660410396558L;
 	
 	public IdentificationException(Declaration decl) {
 		this("Error with declaration " + decl, decl.posn);

@@ -26,7 +26,7 @@ public class ClassDecl extends Declaration {
 		methodDeclList = mdl;
 	}
 
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitClassDecl(this, o);
 	}
 	

@@ -27,7 +27,7 @@ public class QRef extends QualifiedRef {
 	}
 
 	@Override
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitQRef(this, o);
 	}
 

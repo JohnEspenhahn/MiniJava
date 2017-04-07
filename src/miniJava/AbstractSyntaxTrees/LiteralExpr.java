@@ -18,7 +18,7 @@ public class LiteralExpr extends Expression
         lit = t;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o){
+    public Object visit(Visitor v, Object o) {
         return v.visitLiteralExpr(this, o);
     }
 

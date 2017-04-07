@@ -17,7 +17,7 @@ public class ArrayIdxDecl extends Declaration {
 	}
 
 	@Override
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		// TODO Auto-generated method stub
 		return null;
 	}

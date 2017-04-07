@@ -27,7 +27,7 @@ public class FieldDecl extends MemberDecl {
 		super(md, posn);
 	}
 
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitFieldDecl(this, o);
 	}
 	

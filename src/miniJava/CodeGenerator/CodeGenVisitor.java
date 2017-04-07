@@ -48,7 +48,7 @@ import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 import miniJava.ContextualAnalyzer.ScopeStack;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
-public class CodeGenVisitor implements Visitor<Object, Object> {
+public class CodeGenVisitor extends Visitor {
 	
 	private Frame frame;
 
@@ -292,12 +292,11 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitUnaryExpr(UnaryExpr expr, Object arg) {
-		switch (expr.operator.kind) {
-		case NOT:
+		TokenKind kind = expr.operator.kind;
+		if (kind == TokenKind.NOT) {
 			expr.expr.visit(this, null);
 			Machine.emit(Prim.not);
-			break;
-		case MINUS:
+		} else if (kind == TokenKind.MINUS) {
 			// Special case for "-" "num"
 			if (expr.expr instanceof LiteralExpr) {
 				LiteralExpr lexp = (LiteralExpr) expr.expr;
@@ -305,16 +304,16 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 					IntLiteral lit = (IntLiteral) lexp.lit;
 					lit.spelling = "-" + lit.spelling;
 					lit.visit(this, null);
-					break;
+					return null;
 				}
 			}
 			
 			expr.expr.visit(this, null);
 			Machine.emit(Prim.neg);
-			break;
-		default:
+		} else {
 			throw new RuntimeException("Unsupported " + expr.operator.kind);
 		}
+
 		return null;
 	}
 
@@ -398,46 +397,33 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitOperator(Operator op, Object arg) {
-		switch (op.kind) {
-		case PLUS:
+		TokenKind kind = op.kind;
+		if (kind == TokenKind.PLUS)
 			Machine.emit(Prim.add);
-			break;
-		case MINUS:
+		else if (kind == TokenKind.MINUS)
 			Machine.emit(Prim.sub);
-			break;
-		case MULT:
+		else if (kind == TokenKind.MULT)
 			Machine.emit(Prim.mult);
-			break;
-		case DIV:
+		else if (kind == TokenKind.DIV)
 			Machine.emit(Prim.div);
-			break;
-		case AND:
+		else if (kind == TokenKind.AND)
 			Machine.emit(Prim.add);
-			break;
-		case OR:
+		else if (kind == TokenKind.OR)
 			Machine.emit(Prim.or);
-			break;
-		case GTR:
+		else if (kind == TokenKind.GTR)
 			Machine.emit(Prim.gt);
-			break;
-		case LSS:
+		else if (kind == TokenKind.LSS)
 			Machine.emit(Prim.lt);
-			break;
-		case GTR_EQU:
+		else if (kind == TokenKind.GTR_EQU)
 			Machine.emit(Prim.ge);
-			break;
-		case LSS_EQU:
+		else if (kind == TokenKind.LSS_EQU)
 			Machine.emit(Prim.le);
-			break;
-		case EQU:
+		else if (kind == TokenKind.EQU)
 			Machine.emit(Prim.eq);
-			break;
-		case NOT_EQU:
+		else if (kind == TokenKind.NOT_EQU)
 			Machine.emit(Prim.ne);
-			break;
-		default:
+		else
 			throw new RuntimeException("Unsupported " + op.kind);
-		}
 		
 		return null;
 	}

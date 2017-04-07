@@ -18,7 +18,7 @@ public class BlockStmt extends Statement
         this.sl = sl;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitBlockStmt(this, o);
     }
    

@@ -3,10 +3,10 @@ package miniJava.CodeGenerator.RuntimeModifier;
 import miniJava.AbstractSyntaxTrees.AST;
 import miniJava.AbstractSyntaxTrees.Visitor;
 
-public interface RuntimeModifier {
+public class RuntimeModifier {
 
-	void store(Visitor<Object,Object> visitor, AST value);
+	public void store(Visitor visitor, AST value) { }
 	
-	void load(Visitor<Object,Object> visitor);
+	public void load(Visitor visitor) { }
 	
 }

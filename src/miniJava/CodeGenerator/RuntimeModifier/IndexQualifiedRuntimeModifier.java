@@ -11,7 +11,7 @@ public class IndexQualifiedRuntimeModifier extends QualifiedRuntimeModifier {
 		super(base, new RuntimeOffsetGenerator() {
 
 			@Override
-			public void load(Visitor<Object, Object> visitor) {
+			public void load(Visitor visitor) {
 				idxExpr.visit(visitor, null);				
 			}
 			

@@ -22,13 +22,13 @@ public class Interpreter {
 	static int[] data = new int[1024];
 
 	// DATA STORE REGISTERS AND OTHER REGISTERS
-	final static int CB = 0, SB = 0, HB = 1024; // = upper bound of data array + 1
+	static int CB = 0, SB = 0, HB = 1024; // = upper bound of data array + 1
 										
 
 	static int CT, CP, ST, HT, LB, OB, status, temp;
 
 	// machine status values
-	final static int running = 0, halted = 1, failedDataStoreFull = 2,
+	static final int running = 0, halted = 1, failedDataStoreFull = 2,
 			failedInvalidCodeAddress = 3, failedInvalidInstruction = 4,
 			failedOverflow = 5, failedZeroDivide = 6, failedIOError = 7,
 			failedArrayIndex = 8, failedNullRef = 9, failedHeapRef =10,

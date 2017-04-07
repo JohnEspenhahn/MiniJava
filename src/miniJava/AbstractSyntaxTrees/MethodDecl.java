@@ -5,8 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
 
 import mJAM.Machine;
 import miniJava.SyntacticAnalyzer.SourcePosition;
@@ -17,7 +16,7 @@ public class MethodDecl extends MemberDecl {
 	public StatementList statementList;
 	
 	private int address;
-	private Queue<Integer> toPatch; 
+	private ArrayList<Integer> toPatch; 
 
 	public MethodDecl(MemberDecl md, ParameterDeclList pl, StatementList sl) {
 		this(md, pl, sl, SourcePosition.ZERO);
@@ -28,11 +27,11 @@ public class MethodDecl extends MemberDecl {
 		parameterDeclList = pl;
 		statementList = sl;
 		
-		toPatch = new LinkedList<Integer>();
+		toPatch = new ArrayList<Integer>();
 		address = -1;
 	}
 
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitMethodDecl(this, o);
 	}
 	
@@ -46,7 +45,7 @@ public class MethodDecl extends MemberDecl {
 		
 		// Update watching
 		while (!this.toPatch.isEmpty()) {
-			int addrToPatch = this.toPatch.remove();
+			int addrToPatch = this.toPatch.remove(this.toPatch.size()-1);
 			Machine.patch(addrToPatch, this.address);
 		}
 	}

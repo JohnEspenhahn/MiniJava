@@ -19,7 +19,7 @@ public class AssignStmt extends Statement
         val = e;
     }
     
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitAssignStmt(this, o);
     }
     

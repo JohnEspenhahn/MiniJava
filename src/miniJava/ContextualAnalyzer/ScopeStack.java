@@ -25,7 +25,7 @@ import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class ScopeStack {
-	public static final ClassDecl UNSUPPORTED_STRING = new ClassDecl("String", new FieldDeclList(), new MethodDeclList());
+	public static ClassDecl UNSUPPORTED_STRING = new ClassDecl("String", new FieldDeclList(), new MethodDeclList());
 	public static MethodDecl PRINTLN_DECL;
 
 	// Stack of all current scopes

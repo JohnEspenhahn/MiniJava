@@ -2,8 +2,8 @@ package miniJava.CodeGenerator.RuntimeDescription;
 
 import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 
-public interface RuntimeDescription {
+public class RuntimeDescription {
 	
-	RuntimeModifier toBaseRuntimeModifier();
+	public RuntimeModifier toBaseRuntimeModifier() { return null; }
 	
 }

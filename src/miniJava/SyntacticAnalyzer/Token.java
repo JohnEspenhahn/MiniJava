@@ -1,16 +1,16 @@
 package miniJava.SyntacticAnalyzer;
 
-public class Token {
-	public static boolean ALLOW_DEBUG = false;
-	
+public class Token {	
 	private TokenKind kind;
 	private String spelling;
 	private SourcePosition start, end;
 	
 	public Token(TokenKind kind, String spelling, SourcePosition start, SourcePosition end) {
+		/*
 		if ((start == SourcePosition.ZERO || end == SourcePosition.ZERO) && !ALLOW_DEBUG) {
 			throw new RuntimeException("Provided SourcePosition.ZERO while not in debug mode!");
 		}
+		*/
 		
 		this.kind = kind;
 		this.spelling = spelling;
@@ -42,28 +42,30 @@ public class Token {
 	}
 	
 	private TokenKind updateKeywordToken() {
-		switch (this.spelling) {
-		case "class": return TokenKind.CLASS;
-		case "void": return TokenKind.VOID;
-		case "public": return TokenKind.PUBLIC;
-		case "private": return TokenKind.PRIVATE;
-		case "static": return TokenKind.STATIC;
-		case "int": return TokenKind.INT;
-		case "boolean": return TokenKind.BOOLEAN;
-		case "this": return TokenKind.THIS;
-		case "if": return TokenKind.IF;
-		case "while": return TokenKind.WHILE;
-		case "else": return TokenKind.ELSE;
-		case "true": return TokenKind.TRUE;
-		case "false": return TokenKind.FALSE;
-		case "new": return TokenKind.NEW;
-		case "return": return TokenKind.RETURN;
-		case "null": return TokenKind.NULL;
-		default: return TokenKind.IDENTIFIER;
-		}
+		if (spelling.equals("class")) return TokenKind.CLASS;
+		else if (spelling.equals("void")) return TokenKind.VOID;
+		else if (spelling.equals("public")) return TokenKind.PUBLIC;
+		else if (spelling.equals("private")) return TokenKind.PRIVATE;
+		else if (spelling.equals("static")) return TokenKind.STATIC;
+		else if (spelling.equals("int")) return TokenKind.INT;
+		else if (spelling.equals("boolean")) return TokenKind.BOOLEAN;
+		else if (spelling.equals("this")) return TokenKind.THIS;
+		else if (spelling.equals("if")) return TokenKind.IF;
+		else if (spelling.equals("while")) return TokenKind.WHILE;
+		else if (spelling.equals("else")) return TokenKind.ELSE;
+		else if (spelling.equals("true")) return TokenKind.TRUE;
+		else if (spelling.equals("false")) return TokenKind.FALSE;
+		else if (spelling.equals("new")) return TokenKind.NEW;
+		else if (spelling.equals("return")) return TokenKind.RETURN;
+		else if (spelling.equals("null")) return TokenKind.NULL;
+		
+		// Default
+		return TokenKind.IDENTIFIER;
 	}
 	
+	/*
 	public String toString() {
 		return String.format("%s[%s]", getKind().toString(), getSpelling());
 	}
+	*/
 }

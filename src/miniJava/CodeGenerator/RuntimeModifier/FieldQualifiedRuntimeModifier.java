@@ -11,7 +11,7 @@ public class FieldQualifiedRuntimeModifier extends QualifiedRuntimeModifier {
 	public FieldQualifiedRuntimeModifier(RuntimeModifier base, RelativeAddress offset) {
 		super(base, new RuntimeOffsetGenerator() {
 			@Override
-			public void load(Visitor<Object, Object> visitor) {
+			public void load(Visitor visitor) {
 				Machine.emit(Op.LOADL, offset.getOffset());
 			}
 		});

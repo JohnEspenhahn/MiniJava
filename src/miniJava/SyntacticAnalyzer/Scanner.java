@@ -37,54 +37,53 @@ public class Scanner {
 	}
 
 	private TokenKind scanToken() {
-		switch (cc) {
-		case '>':
+		if (cc == '>') {
 			takeIt();
 			if (cc == '=') {
 				takeIt();
 				return TokenKind.GTR_EQU;
 			} else return TokenKind.GTR;
-		case '<':
+		} else if (cc == '<') {
 			takeIt();
 			if (cc == '=') {
 				takeIt();
 				return TokenKind.LSS_EQU;
 			} else return TokenKind.LSS;
-		case '!':
+		} else if (cc == '!') {
 			takeIt();
 			if (cc == '=') {
 				takeIt();
 				return TokenKind.NOT_EQU;
 			} else return TokenKind.NOT;
-		case '&':
+		} else if (cc == '&') {
 			takeIt();
 			if (cc == '&') {
 				takeIt();
 				return TokenKind.AND;
 			} else return TokenKind.ERROR;
-		case '|':
+		} else if (cc == '|') {
 			takeIt();
 			if (cc == '|') {
 				takeIt();
 				return TokenKind.OR;
 			} else return TokenKind.ERROR;
-		case '=':
+		} else if (cc == '=') {
 			takeIt();
 			if (cc == '=') {
 				takeIt();
 				return TokenKind.EQU;
 			} else return TokenKind.ASSIGN;
-		case '+':
+		} else if (cc == '+') {
 			takeIt();
 			return TokenKind.PLUS;
-		case '-':
+		} else if (cc == '-') {
 			takeIt();
 			if (cc == '-') return TokenKind.DECREMENT;
 			else return TokenKind.MINUS;
-		case '*':
+		} else if (cc == '*') {
 			takeIt();
 			return TokenKind.MULT;
-		case '/':
+		} else if (cc == '/') {
 			takeIt();
 			if (cc == '*') {
 				// Comment block (clear taken '/')
@@ -98,59 +97,46 @@ public class Scanner {
 			} else {
 				return TokenKind.DIV;
 			}
-		case '[':
+		} else if (cc == '[') {		
 			takeIt();
 			return TokenKind.SQR_OPEN;
-		case ']':
+		} else if (cc == ']') {
 			takeIt();
 			return TokenKind.SQR_CLOSE;
-		case '(':
+		} else if (cc == '(') {
 			takeIt();
 			return TokenKind.PAREN_OPEN;
-		case ')':
+		} else if (cc == ')') {
 			takeIt();
 			return TokenKind.PAREN_CLOSE;
-		case '{':
+		} else if (cc == '{') {
 			takeIt();
 			return TokenKind.CURL_OPEN;
-		case '}':
+		} else if (cc == '}') {
 			takeIt();
-			return TokenKind.CURL_CLOSE;
-		case '.':
+			return TokenKind.CURL_CLOSE;	
+		} else if (cc == '.') {
 			takeIt();
 			return TokenKind.DOT;
-		case ',':
+		} else if (cc == ',') {
 			takeIt();
 			return TokenKind.COMMA;
-		case ';':
+		} else if (cc == ';') {
 			takeIt();
 			return TokenKind.SEMICOLON;
-		case '0': case '1': case '2': case '3':
-		case '4': case '5': case '6': case '7':
-		case '8': case '9':
+		} else if (isDigit(cc)) {
 			takeIt();
 			while (isDigit(cc)) takeIt();
-			return TokenKind.NUM;
-		case 'a':  case 'b':  case 'c':  case 'd':  case 'e':
-	    case 'f':  case 'g':  case 'h':  case 'i':  case 'j':
-	    case 'k':  case 'l':  case 'm':  case 'n':  case 'o':
-	    case 'p':  case 'q':  case 'r':  case 's':  case 't':
-	    case 'u':  case 'v':  case 'w':  case 'x':  case 'y':
-	    case 'z':
-	    case 'A':  case 'B':  case 'C':  case 'D':  case 'E':
-	    case 'F':  case 'G':  case 'H':  case 'I':  case 'J':
-	    case 'K':  case 'L':  case 'M':  case 'N':  case 'O':
-	    case 'P':  case 'Q':  case 'R':  case 'S':  case 'T':
-	    case 'U':  case 'V':  case 'W':  case 'X':  case 'Y':
-	    case 'Z':
-	    	takeIt();
+			return TokenKind.NUM;	
+		} else if (isLetter(cc)) {
+			takeIt();
 	      	while (isLetter(cc) || isDigit(cc) || cc == '_') 
     	  		takeIt();
       		return TokenKind.IDENTIFIER;
-	    case SourceFile.eot:
-	    	return TokenKind.EOT;
-  		default:
-  			return TokenKind.ERROR;
+		} else if (cc == SourceFile.eot) {
+			return TokenKind.EOT;
+		} else {
+			return TokenKind.ERROR;
 		}
 	}
 

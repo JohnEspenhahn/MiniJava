@@ -18,7 +18,7 @@ public class RefExpr extends Expression
         ref = r;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitRefExpr(this, o);
     }
 

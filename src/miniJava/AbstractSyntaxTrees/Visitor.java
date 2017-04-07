@@ -9,54 +9,54 @@ package miniJava.AbstractSyntaxTrees;
  * An implementation of the Visitor interface provides a method visitX
  * for each non-abstract AST class X.  
  */
-public interface Visitor<ArgType,ResultType> {
+public class Visitor {
 
   // Package
-    public ResultType visitPackage(Package prog, ArgType arg);
+	public Object visitPackage(Package prog, Object arg) { return null; }
 
   // Declarations
-    public ResultType visitClassDecl(ClassDecl cd, ArgType arg);
-    public ResultType visitFieldDecl(FieldDecl fd, ArgType arg);
-    public ResultType visitMethodDecl(MethodDecl md, ArgType arg);
-    public ResultType visitParameterDecl(ParameterDecl pd, ArgType arg);
-    public ResultType visitVarDecl(VarDecl decl, ArgType arg);
-    public ResultType visitThisDecl(ThisDecl decl, ArgType arg);
-    public ResultType visitArrayIdxDecl(ArrayIdxDecl decl, ArgType arg);
+    public Object visitClassDecl(ClassDecl cd, Object arg) { return null; }
+    public Object visitFieldDecl(FieldDecl fd, Object arg) { return null; }
+    public Object visitMethodDecl(MethodDecl md, Object arg) { return null; }
+    public Object visitParameterDecl(ParameterDecl pd, Object arg) { return null; }
+    public Object visitVarDecl(VarDecl decl, Object arg) { return null; }
+    public Object visitThisDecl(ThisDecl decl, Object arg) { return null; }
+    public Object visitArrayIdxDecl(ArrayIdxDecl decl, Object arg) { return null; }
  
   // Types
-    public ResultType visitBaseType(BaseType type, ArgType arg);
-    public ResultType visitClassType(ClassType type, ArgType arg);
-    public ResultType visitArrayType(ArrayType type, ArgType arg);
+    public Object visitBaseType(BaseType type, Object arg) { return null; }
+    public Object visitClassType(ClassType type, Object arg) { return null; }
+    public Object visitArrayType(ArrayType type, Object arg) { return null; }
     
   // Statements
-    public ResultType visitBlockStmt(BlockStmt stmt, ArgType arg);
-    public ResultType visitVardeclStmt(VarDeclStmt stmt, ArgType arg);
-    public ResultType visitAssignStmt(AssignStmt stmt, ArgType arg);
-    public ResultType visitCallStmt(CallStmt stmt, ArgType arg);
-    public ResultType visitReturnStmt(ReturnStmt stmt, ArgType arg);
-    public ResultType visitIfStmt(IfStmt stmt, ArgType arg);
-    public ResultType visitWhileStmt(WhileStmt stmt, ArgType arg);
+    public Object visitBlockStmt(BlockStmt stmt, Object arg) { return null; }
+    public Object visitVardeclStmt(VarDeclStmt stmt, Object arg) { return null; }
+    public Object visitAssignStmt(AssignStmt stmt, Object arg) { return null; }
+    public Object visitCallStmt(CallStmt stmt, Object arg) { return null; }
+    public Object visitReturnStmt(ReturnStmt stmt, Object arg) { return null; }
+    public Object visitIfStmt(IfStmt stmt, Object arg) { return null; }
+    public Object visitWhileStmt(WhileStmt stmt, Object arg) { return null; }
     
   // Expressions
-    public ResultType visitUnaryExpr(UnaryExpr expr, ArgType arg);
-    public ResultType visitBinaryExpr(BinaryExpr expr, ArgType arg);
-    public ResultType visitRefExpr(RefExpr expr, ArgType arg);
-    public ResultType visitCallExpr(CallExpr expr, ArgType arg);
-    public ResultType visitLiteralExpr(LiteralExpr expr, ArgType arg);
-    public ResultType visitNewObjectExpr(NewObjectExpr expr, ArgType arg);
-    public ResultType visitNewArrayExpr(NewArrayExpr expr, ArgType arg);
+    public Object visitUnaryExpr(UnaryExpr expr, Object arg) { return null; }
+    public Object visitBinaryExpr(BinaryExpr expr, Object arg) { return null; }
+    public Object visitRefExpr(RefExpr expr, Object arg) { return null; }
+    public Object visitCallExpr(CallExpr expr, Object arg) { return null; }
+    public Object visitLiteralExpr(LiteralExpr expr, Object arg) { return null; }
+    public Object visitNewObjectExpr(NewObjectExpr expr, Object arg) { return null; }
+    public Object visitNewArrayExpr(NewArrayExpr expr, Object arg) { return null; }
     
   // References
-    public ResultType visitThisRef(ThisRef ref, ArgType arg);
-    public ResultType visitIdRef(IdRef ref, ArgType arg);
-    public ResultType visitIxIdRef(IxIdRef ref, ArgType arg);
-    public ResultType visitQRef(QRef ref, ArgType arg);
-    public ResultType visitIxQRef(IxQRef ref, ArgType arg);
+    public Object visitThisRef(ThisRef ref, Object arg) { return null; }
+    public Object visitIdRef(IdRef ref, Object arg) { return null; }
+    public Object visitIxIdRef(IxIdRef ref, Object arg) { return null; }
+    public Object visitQRef(QRef ref, Object arg) { return null; }
+    public Object visitIxQRef(IxQRef ref, Object arg) { return null; }
 
   // Terminals
-    public ResultType visitIdentifier(Identifier id, ArgType arg);
-    public ResultType visitOperator(Operator op, ArgType arg);
-    public ResultType visitIntLiteral(IntLiteral num, ArgType arg);
-    public ResultType visitBooleanLiteral(BooleanLiteral bool, ArgType arg);
-    public ResultType visitNullLiteral(NullLiteral nlit, ArgType arg);
+    public Object visitIdentifier(Identifier id, Object arg) { return null; }
+    public Object visitOperator(Operator op, Object arg) { return null; }
+    public Object visitIntLiteral(IntLiteral num, Object arg) { return null; }
+    public Object visitBooleanLiteral(BooleanLiteral bool, Object arg) { return null; }
+    public Object visitNullLiteral(NullLiteral nlit, Object arg) { return null; }
 }

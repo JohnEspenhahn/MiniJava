@@ -21,17 +21,12 @@ public class IxIdRef extends BaseRef {
 		this.indexExpr = expr;
 	}
 
-	public <A,R> R visit(Visitor<A,R> v, A o){
+	public Object visit(Visitor v, Object o) {
 		return v.visitIxIdRef(this, o);
 	}
 	
 	public Identifier id;
 	public Expression indexExpr;
-	
-	@Override
-	public String toString() {
-		return id + "[...]";
-	}
 
 	@Override
 	public RuntimeModifier getRuntimeModifier() {

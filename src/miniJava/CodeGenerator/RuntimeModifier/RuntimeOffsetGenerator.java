@@ -4,6 +4,6 @@ import miniJava.AbstractSyntaxTrees.Visitor;
 
 public interface RuntimeOffsetGenerator {
 
-	public void load(Visitor<Object,Object> visitor);
+	public void load(Visitor visitor);
 	
 }

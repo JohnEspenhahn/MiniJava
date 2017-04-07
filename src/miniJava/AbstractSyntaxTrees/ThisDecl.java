@@ -12,7 +12,7 @@ public class ThisDecl extends Declaration {
 	}
 
 	@Override
-	public <A, R> R visit(Visitor<A, R> v, A o) {
+	public Object visit(Visitor v, Object o) {
 		return v.visitThisDecl(this, o);
 	}
 

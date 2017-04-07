@@ -9,8 +9,8 @@ import miniJava.ContextualAnalyzer.Exceptions.DuplicateDefinitionException;
 
 public class Scope {
 	private Map<String, Declaration> decls;
-	public final boolean static_scope;
-	public final Scope.Kind kind;
+	public boolean static_scope;
+	public Scope.Kind kind;
 	protected Declaration owner;
 	
 	public Scope(Declaration owner, boolean static_scope, Scope.Kind kind) {
@@ -40,7 +40,7 @@ public class Scope {
 	public enum Kind {
 		PREDEFINED(-1), PACKAGE(0), CLASS(1), METHOD(2), BLOCKSTMT(3), STMT(4);
 		
-		public final int depth;
+		public int depth;
 		Kind(int depth) {
 			this.depth = depth;
 		}

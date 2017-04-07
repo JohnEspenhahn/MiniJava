@@ -20,7 +20,7 @@ public class BinaryExpr extends Expression
         right = e2;
     }
         
-    public <A,R> R visit(Visitor<A,R> v, A o) {
+    public Object visit(Visitor v, Object o) {
         return v.visitBinaryExpr(this, o);
     }
     
