@@ -5,8 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
-import mJAM.Machine.Reg;
-import miniJava.CodeGenerator.RuntimeDescription.RelativeAddress;
+import miniJava.CodeGenerator.RuntimeDescription.LocalsRelativeAddress;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class LocalDecl extends Declaration {	
@@ -24,6 +23,6 @@ public abstract class LocalDecl extends Declaration {
 	}
 	
 	public void setLocalOffset(int offset) {
-		this.rd = new RelativeAddress(Reg.LB, offset);
+		this.setRuntimeDesc(new LocalsRelativeAddress(offset));
 	}
 }

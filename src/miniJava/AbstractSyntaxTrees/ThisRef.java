@@ -5,6 +5,8 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
+import miniJava.CodeGenerator.RuntimeModifier.ThisRuntimeModifier;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ThisRef extends BaseRef {
@@ -25,6 +27,11 @@ public class ThisRef extends BaseRef {
 	@Override
 	public String toString() {
 		return "this";
+	}
+
+	@Override
+	public RuntimeModifier getRuntimeModifier() {
+		return new ThisRuntimeModifier();
 	}
 	
 }

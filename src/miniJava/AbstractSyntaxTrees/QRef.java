@@ -5,6 +5,11 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.CodeGenerator.RuntimeDescription.AbsoluteAddress;
+import miniJava.CodeGenerator.RuntimeDescription.RelativeAddress;
+import miniJava.CodeGenerator.RuntimeDescription.RuntimeDescription;
+import miniJava.CodeGenerator.RuntimeModifier.FieldQualifiedRuntimeModifier;
+import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class QRef extends QualifiedRef {
@@ -39,5 +44,19 @@ public class QRef extends QualifiedRef {
 	@Override
 	public String toString() {
 		return ref + "." + id;
+	}
+	
+	@Override
+	public RuntimeModifier getRuntimeModifier() {
+		RuntimeDescription rd = getDecl().getRuntimeDesc();
+		if (rd instanceof AbsoluteAddress) {
+			// Can use absolute location
+			return rd.toBaseRuntimeModifier();
+		} else if (rd instanceof RelativeAddress) {
+			// Make relative to another level
+			return new FieldQualifiedRuntimeModifier(getRef().getRuntimeModifier(), (RelativeAddress) rd);
+		} else {
+			throw new RuntimeException("Unknown address type " + rd);
+		}
 	}
 }

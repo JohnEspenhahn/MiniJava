@@ -5,6 +5,8 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.CodeGenerator.RuntimeModifier.IndexQualifiedRuntimeModifier;
+import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class IxIdRef extends BaseRef {
@@ -29,5 +31,13 @@ public class IxIdRef extends BaseRef {
 	@Override
 	public String toString() {
 		return id + "[...]";
+	}
+
+	@Override
+	public RuntimeModifier getRuntimeModifier() {
+		return new IndexQualifiedRuntimeModifier(
+				getDecl().getRuntimeDesc().toBaseRuntimeModifier(), 
+				indexExpr
+			);
 	}
 }

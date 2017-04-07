@@ -15,6 +15,7 @@ import miniJava.AbstractSyntaxTrees.CallExpr;
 import miniJava.AbstractSyntaxTrees.CallStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.ClassType;
+import miniJava.AbstractSyntaxTrees.ExprList;
 import miniJava.AbstractSyntaxTrees.Expression;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
 import miniJava.AbstractSyntaxTrees.IdRef;
@@ -33,6 +34,7 @@ import miniJava.AbstractSyntaxTrees.Package;
 import miniJava.AbstractSyntaxTrees.ParameterDecl;
 import miniJava.AbstractSyntaxTrees.QRef;
 import miniJava.AbstractSyntaxTrees.RefExpr;
+import miniJava.AbstractSyntaxTrees.Reference;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.ThisDecl;
@@ -42,9 +44,7 @@ import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
 import miniJava.AbstractSyntaxTrees.Visitor;
 import miniJava.AbstractSyntaxTrees.WhileStmt;
-import miniJava.CodeGenerator.RuntimeDescription.AbsoluteAddress;
-import miniJava.CodeGenerator.RuntimeDescription.RelativeAddress;
-import miniJava.CodeGenerator.RuntimeDescription.RuntimeDescription;
+import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 import miniJava.ContextualAnalyzer.ScopeStack;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
@@ -137,7 +137,7 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitVarDecl(VarDecl decl, Object arg) {
-		decl.setLocalOffset(frame.getLocalBase());
+		decl.setLocalOffset(frame.getNextLocalBase());
 		return null;
 	}
 
@@ -173,61 +173,55 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitAssignStmt(AssignStmt stmt, Object arg) {
-		RuntimeDescription rd = stmt.ref.getRuntimeDesc();
-		if (rd instanceof AbsoluteAddress) {
-			stmt.val.visit(this, null);
-			rd.store();
-		} else if (stmt.ref instanceof QRef) {
-			// load address of owning object
-			((QRef) stmt.ref).ref.visit(this, null);
-			// load index of field
-			Machine.emit(Op.LOADL, ((RelativeAddress) rd).getOffset());
-			// load val
-			stmt.val.visit(this, null);
-			// fieldupd
-			Machine.emit(Prim.fieldupd);
-		} else {
-			stmt.val.visit(this, null);
-			rd.store();
-		}
-		
+		RuntimeModifier rm = stmt.ref.getRuntimeModifier();
+		rm.store(this, stmt.val);		
 		return null;
 	}
 
 	@Override
 	public Object visitCallStmt(CallStmt stmt, Object arg) {
+		handleCall(stmt.argList, stmt.methodRef);		
+		return null;
+	}
+
+	@Override
+	public Object visitCallExpr(CallExpr expr, Object arg) {
+		handleCall(expr.argList, expr.methodRef);
+		return null;
+	}
+	
+	private void handleCall(ExprList argList, Reference methodRef) {
 		// Load parameters to stack
-		for (Expression exp: stmt.argList)
+		for (Expression exp: argList)
 			exp.visit(this, null);
 		
-		// Check special cases
-		if (stmt.methodRef.getDecl() == ScopeStack.PRINTLN_DECL) {
+		// Check special case for println
+		if (methodRef.getDecl() == ScopeStack.PRINTLN_DECL) {
 			Machine.emit(Prim.putintnl);
-			return null;
+			return;
 		}
 		
-		MethodDecl md = (MethodDecl) stmt.methodRef.getDecl();		
+		MethodDecl md = (MethodDecl) methodRef.getDecl();		
 		if (md.isStatic) {
 			// Don't care about object
 			Machine.emit(Op.CALL, Reg.CB, -1);
 			md.patch(Machine.nextInstrAddr()-1);
 		} else {
-			if (stmt.methodRef instanceof QRef) {
+			// Method ref is either QRef or IdRef
+			if (methodRef instanceof QRef) {
 				// Load address of owning object
-				((QRef) stmt.methodRef).ref.visit(this, null);
+				((QRef) methodRef).ref.visit(this, null);
 			} else {
 				// Current object is owning object
 				Machine.emit(Op.LOADA, Reg.OB, 0);
 			}
 			
-			// Call the method on this object
+			// Call the method on loaded object
 			Machine.emit(Op.CALLI, Reg.CB, -1);
 			md.patch(Machine.nextInstrAddr()-1);
 		}
-		
-		return null;
 	}
-
+	
 	@Override
 	public Object visitReturnStmt(ReturnStmt stmt, Object arg) {
 		if (stmt.returnExpr != null) {
@@ -339,12 +333,6 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 	}
 
 	@Override
-	public Object visitCallExpr(CallExpr expr, Object arg) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Object visitLiteralExpr(LiteralExpr expr, Object arg) {
 		expr.lit.visit(this, null);
 		return null;
@@ -360,44 +348,37 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitNewArrayExpr(NewArrayExpr expr, Object arg) {
-		// TODO Auto-generated method stub
+		expr.sizeExpr.visit(this, null);
+		Machine.emit(Prim.newarr);
 		return null;
 	}
 
 	@Override
 	public Object visitThisRef(ThisRef ref, Object arg) {
-		Machine.emit(Op.LOADA, Reg.OB, 0);
+		ref.getRuntimeModifier().load(this);
 		return null;
 	}
 
 	@Override
 	public Object visitIdRef(IdRef ref, Object arg) {
-		// Load directly
-		RuntimeDescription rd = ref.getRuntimeDesc();
-		if (rd != null) rd.load(); // Might be null if can ignore (i.e. a class name)
+		ref.getRuntimeModifier().load(this);
 		return null;
 	}
 
 	@Override
 	public Object visitIxIdRef(IxIdRef ref, Object arg) {
-		// TODO Auto-generated method stub
+		ref.getRuntimeModifier().load(this);
 		return null;
 	}
 
 	@Override
 	public Object visitQRef(QRef ref, Object arg) {
-		RuntimeDescription rd = ref.getRuntimeDesc();
-		
-		if (rd instanceof AbsoluteAddress) {
-			// Load directly
-			rd.load();
-		} else {
-			// Get object we are loading on
+		// Special case for array length
+		if (ref.getDecl() == ArrayType.LENGTH) {
 			ref.ref.visit(this, null);
-			// load index of field
-			Machine.emit(Op.LOADL, ((RelativeAddress) rd).getOffset());
-			// Load field's value
-			Machine.emit(Prim.fieldref);
+			Machine.emit(Prim.arraylen);
+		} else {
+			ref.getRuntimeModifier().load(this);
 		}
 
 		return null;
@@ -405,7 +386,7 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitIxQRef(IxQRef ref, Object arg) {
-		// TODO Auto-generated method stub
+		ref.getRuntimeModifier().load(this);
 		return null;
 	}
 

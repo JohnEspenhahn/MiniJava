@@ -9,7 +9,7 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ArrayType extends TypeDenoter {
-	private static MemberDecl LENGTH = new FieldDecl(false, false, true, new BaseType(TypeKind.INT), "length");
+	public static MemberDecl LENGTH = new FieldDecl(false, false, true, new BaseType(TypeKind.INT), "length");
 	
 	public TypeDenoter eltType;
 	

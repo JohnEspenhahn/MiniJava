@@ -9,7 +9,7 @@ public class Frame {
 		this.numArgs = numArgs;
 	}
 	
-	public int getLocalBase() {
+	public int getNextLocalBase() {
 		return nextLocalBase++;
 	}
 	

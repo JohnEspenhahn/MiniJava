@@ -1,5 +1,6 @@
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.CodeGenerator.RuntimeDescription.RuntimeDescription;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ArrayIdxDecl extends Declaration {
@@ -19,6 +20,12 @@ public class ArrayIdxDecl extends Declaration {
 	public <A, R> R visit(Visitor<A, R> v, A o) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public RuntimeDescription getRuntimeDesc() {
+		// Array offset for indexing is handled in visitor
+		return this.arrDecl.getRuntimeDesc();
 	}
 
 }

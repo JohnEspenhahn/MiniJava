@@ -1,13 +1,9 @@
 package miniJava.CodeGenerator.RuntimeDescription;
 
-import mJAM.Machine;
-import mJAM.Machine.Op;
-import mJAM.Machine.Reg;
+import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 
-public abstract class RuntimeDescription {
+public interface RuntimeDescription {
 	
-	public abstract void store();
-	
-	public abstract void load();
+	RuntimeModifier toBaseRuntimeModifier();
 	
 }

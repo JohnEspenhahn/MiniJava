@@ -5,6 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class IdRef extends BaseRef {
@@ -26,5 +27,10 @@ public class IdRef extends BaseRef {
 	@Override
 	public String toString() {
 		return id.toString();
+	}
+
+	@Override
+	public RuntimeModifier getRuntimeModifier() {
+		return getDecl().getRuntimeDesc().toBaseRuntimeModifier();
 	}
 }

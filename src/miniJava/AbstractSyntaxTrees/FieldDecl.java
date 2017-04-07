@@ -5,9 +5,8 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
-import mJAM.Machine.Reg;
 import miniJava.CodeGenerator.RuntimeDescription.AbsoluteAddress;
-import miniJava.CodeGenerator.RuntimeDescription.RelativeAddress;
+import miniJava.CodeGenerator.RuntimeDescription.ObjectRelativeAddress;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class FieldDecl extends MemberDecl {
@@ -37,10 +36,10 @@ public class FieldDecl extends MemberDecl {
 	 */
 	
 	public void setObjectOffset(int offset) {
-		this.rd = new RelativeAddress(Reg.OB, offset);
+		this.setRuntimeDesc(new ObjectRelativeAddress(offset));
 	}
 	
 	public void setAbsoluteAddress(int address) {
-		this.rd = new AbsoluteAddress(address);
+		this.setRuntimeDesc(new AbsoluteAddress(address));
 	}
 }
