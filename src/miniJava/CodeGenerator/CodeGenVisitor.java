@@ -479,7 +479,7 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitNullLiteral(NullLiteral nlit, Object arg) {
-		// TODO Auto-generated method stub
+		Machine.emit(Op.LOADL, 0);
 		return null;
 	}
 
