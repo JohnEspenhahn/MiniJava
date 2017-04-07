@@ -5,18 +5,18 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import mJAM.Machine.Reg;
+import miniJava.CodeGenerator.RuntimeDescription.AbsoluteAddress;
+import miniJava.CodeGenerator.RuntimeDescription.RelativeAddress;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class FieldDecl extends MemberDecl {
-	private int ob_offset;
-
 	public FieldDecl(boolean isPrivate, boolean isStatic, TypeDenoter t, String name, SourcePosition posn) {
 		super(isPrivate, isStatic, t, name, posn);
-		this.ob_offset = 0;
 	}
 	
 	public FieldDecl(boolean isPrivate, boolean isStatic, TypeDenoter t, String name) {
-		this(isPrivate, isStatic, t, name, SourcePosition.ZERO);
+		this(isPrivate, isStatic, false, t, name);
 	}
 	
 	public FieldDecl(boolean isPrivate, boolean isStatic, boolean isReadonly, TypeDenoter t, String name) {
@@ -32,11 +32,15 @@ public class FieldDecl extends MemberDecl {
 		return v.visitFieldDecl(this, o);
 	}
 	
+	/*
+	 * CODE GENERATION	
+	 */
+	
 	public void setObjectOffset(int offset) {
-		this.ob_offset = offset;
+		this.rd = new RelativeAddress(Reg.OB, offset);
 	}
 	
-	public int getObjectOffset() {
-		return this.ob_offset;
+	public void setAbsoluteAddress(int address) {
+		this.rd = new AbsoluteAddress(address);
 	}
 }

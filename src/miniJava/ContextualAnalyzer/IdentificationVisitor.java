@@ -334,7 +334,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		if (!(decl.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
 		
 		// Want to link to element of array, not array itself
-		ref.setDecl(new ArrayIdxDecl((ArrayType) decl.type, ref.posn));
+		ref.setDecl(new ArrayIdxDecl(decl, (ArrayType) decl.type, ref.posn));
 		
 		ref.indexExpr.visit(this, scope);
 		return null;
@@ -362,7 +362,7 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		if (!(member.type instanceof ArrayType)) throw new ArrayIdentifictionException(ref);
 		
 		// Want to link to element of array, not array itself
-		ref.setDecl(new ArrayIdxDecl((ArrayType) member.type, ref.posn));
+		ref.setDecl(new ArrayIdxDecl(member, (ArrayType) member.type, ref.posn));
 		
 		if (member.isPrivate) checkPrivate(ref, member, scope);		
 		

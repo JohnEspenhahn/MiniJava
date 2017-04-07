@@ -26,6 +26,7 @@ import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class ScopeStack {
 	public static final ClassDecl UNSUPPORTED_STRING = new ClassDecl("String", new FieldDeclList(), new MethodDeclList());
+	public static MethodDecl PRINTLN_DECL;
 
 	// Stack of all current scopes
 	private Deque<Scope> scopes;
@@ -53,9 +54,10 @@ public class ScopeStack {
 		MethodDeclList PrintStreamMethods = new MethodDeclList();
 		ParameterDeclList PrintLnParams = new ParameterDeclList();
 		PrintLnParams.add(new ParameterDecl(new BaseType(TypeKind.INT, null), "n"));
-		PrintStreamMethods.add(new MethodDecl(
+		PRINTLN_DECL = new MethodDecl(
 				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "println"),
-				PrintLnParams, new StatementList()));
+				PrintLnParams, new StatementList());
+		PrintStreamMethods.add(PRINTLN_DECL);
 		ClassDecl PrintStream = new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods);
 		this.declare(PrintStream);
 		

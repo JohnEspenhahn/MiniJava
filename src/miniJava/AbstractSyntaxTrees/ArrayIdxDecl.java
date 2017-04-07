@@ -3,10 +3,11 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class ArrayIdxDecl extends Declaration {
-
-	public ArrayIdxDecl(ArrayType type, SourcePosition posn) {
+	private Declaration arrDecl;
+	
+	public ArrayIdxDecl(Declaration arrDecl, ArrayType type, SourcePosition posn) {
 		super("[...]", type.eltType, posn);
-		// TODO Auto-generated constructor stub
+		this.arrDecl = arrDecl;
 	}
 
 	@Override

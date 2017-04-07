@@ -11,7 +11,8 @@ import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class ClassDecl extends Declaration {
-
+	public int instanceSize;
+	
 	public FieldDeclList fieldDeclList;
 	public MethodDeclList methodDeclList;
 	
@@ -28,6 +29,10 @@ public class ClassDecl extends Declaration {
 	public <A, R> R visit(Visitor<A, R> v, A o) {
 		return v.visitClassDecl(this, o);
 	}
+	
+	/*
+	 * IDENTIFICATION
+	 */
 	
 	@Override
 	public boolean allowStaticReference() {

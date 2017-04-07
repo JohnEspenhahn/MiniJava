@@ -92,6 +92,7 @@ public class Compiler {
 		 */
 		System.out.println("Running code in debugger ... ");
 		Interpreter.debug(objectCodeFileName, asmCodeFileName);
+		Interpreter.interpret(objectCodeFileName);
 
 		System.out.println("*** mJAM execution completed");
 	}

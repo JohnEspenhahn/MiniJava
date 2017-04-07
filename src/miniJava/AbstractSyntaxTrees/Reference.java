@@ -5,6 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.CodeGenerator.RuntimeDescription.RuntimeDescription;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
@@ -20,7 +21,20 @@ public abstract class Reference extends AST {
 		this.decl = decl;
 	}
 	
+	/*
+	 * CONTEXTUAL ANALYSIS
+	 */
+		
 	public Declaration getDecl() {
 		return this.decl;
 	}
+	
+	/*
+	 * CODE GENERATION
+	 */
+	
+	public RuntimeDescription getRuntimeDesc() {
+		return getDecl().rd;
+	}
+	
 }
