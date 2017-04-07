@@ -17,8 +17,13 @@ public class Token {
 		this.start = start;
 		this.end = end;
 		
-		if (kind == TokenKind.IDENTIFIER)
+		if (kind == TokenKind.IDENTIFIER) {
 			this.kind = updateKeywordToken();
+		} else if (kind == TokenKind.CHAR) {
+            this.kind = TokenKind.NUM;
+            this.spelling = "" + (int) this.spelling.charAt(1);
+        }
+
 	}
 	
 	public Token(TokenKind kind, String spelling) {

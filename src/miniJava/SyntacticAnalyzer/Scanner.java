@@ -124,6 +124,27 @@ public class Scanner {
 		} else if (cc == ';') {
 			takeIt();
 			return TokenKind.SEMICOLON;
+		} else if (cc == '\'') {
+            takeIt();
+            if (cc == '\\') {
+                // Convert escape character
+                skipIt();
+                if (cc == 'n') cc = 10;
+                else if (cc == 'r') cc = 13;
+                else if (cc == 't') cc = 9; 
+                else if (cc == '\\') cc = 92;
+                else if (cc == '\'') cc = 39;
+                else return TokenKind.ERROR;
+                takeIt();
+            } else {
+                takeIt();
+            }
+            
+            if (cc == '\'') {
+                takeIt();
+                return TokenKind.CHAR;
+            }
+            return TokenKind.ERROR;
 		} else if (isDigit(cc)) {
 			takeIt();
 			while (isDigit(cc)) takeIt();
