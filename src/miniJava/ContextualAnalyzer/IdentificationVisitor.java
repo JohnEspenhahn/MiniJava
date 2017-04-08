@@ -34,6 +34,8 @@ import miniJava.AbstractSyntaxTrees.QualifiedRef;
 import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
+import miniJava.AbstractSyntaxTrees.StringLiteral;
+import miniJava.AbstractSyntaxTrees.StringLiteralDecl;
 import miniJava.AbstractSyntaxTrees.ThisDecl;
 import miniJava.AbstractSyntaxTrees.ThisRef;
 import miniJava.AbstractSyntaxTrees.TypeKind;
@@ -60,6 +62,8 @@ public class IdentificationVisitor extends Visitor {
 			
 			// Visit package classes
 			visitPackage(prog, null);
+			
+			prog.stringLits = scope.getStringLiteralDecls();
 			return true;
 		} catch (IdentificationException e) {
 			System.out.println(e.getMessage());
@@ -298,6 +302,7 @@ public class IdentificationVisitor extends Visitor {
 
 	@Override
 	public Object visitLiteralExpr(LiteralExpr expr, Object arg) {
+		expr.lit.visit(this, null);
 		return null;
 	}
 
@@ -402,6 +407,17 @@ public class IdentificationVisitor extends Visitor {
 
 	@Override
 	public Object visitNullLiteral(NullLiteral nlit, Object arg) {
+		return null;
+	}
+
+	@Override
+	public Object visitStringLiteral(StringLiteral slit, Object arg) {
+		scope.addStringLiteral(slit);
+		return null;
+	}
+	
+	@Override
+	public Object visitStringLiteralDecl(StringLiteralDecl sld, Object o) {
 		return null;
 	}
 

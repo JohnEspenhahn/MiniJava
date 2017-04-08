@@ -62,4 +62,9 @@ public class Type {
 		}
 	}
 	
+	@Override
+	public String toString() {
+		return kind.toString();
+	}
+	
 }

@@ -1,39 +1,32 @@
 package miniJava.ContextualAnalyzer;
 
-import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
-import miniJava.AbstractSyntaxTrees.BaseType;
 import miniJava.AbstractSyntaxTrees.BlockStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
-import miniJava.AbstractSyntaxTrees.ClassType;
 import miniJava.AbstractSyntaxTrees.Declaration;
-import miniJava.AbstractSyntaxTrees.FieldDecl;
-import miniJava.AbstractSyntaxTrees.FieldDeclList;
 import miniJava.AbstractSyntaxTrees.Identifier;
 import miniJava.AbstractSyntaxTrees.MethodDecl;
-import miniJava.AbstractSyntaxTrees.MethodDeclList;
-import miniJava.AbstractSyntaxTrees.ParameterDecl;
-import miniJava.AbstractSyntaxTrees.ParameterDeclList;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.StatementList;
-import miniJava.AbstractSyntaxTrees.TypeKind;
+import miniJava.AbstractSyntaxTrees.StringLiteral;
+import miniJava.AbstractSyntaxTrees.StringLiteralDecl;
+import miniJava.CodeGenerator.GlobalClasses;
 import miniJava.ContextualAnalyzer.Exceptions.DuplicateDefinitionException;
 import miniJava.ContextualAnalyzer.Exceptions.StaticReferenceException;
 import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
-import miniJava.SyntacticAnalyzer.Token;
-import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class ScopeStack {
-	public static ClassDecl UNSUPPORTED_STRING = new ClassDecl("String", new FieldDeclList(), new MethodDeclList());
-	public static MethodDecl PRINTLN_DECL;
-
 	// Stack of all current scopes
-	private Deque<Scope> scopes;
+	private LinkedList<Scope> scopes;
+	private Map<String,StringLiteralDecl> stringLits;
 	
 	public ScopeStack() {
 		// Use linked list to get correct iteration order
 		this.scopes = new LinkedList<Scope>();
+		this.stringLits = new HashMap<String, StringLiteralDecl>();
 		
 		createLevel0();
 	}
@@ -42,30 +35,7 @@ public class ScopeStack {
 		// Force hide-able package layer
 		this.scopes.push(new Scope(null, true, Scope.Kind.PREDEFINED));
 		
-		// class System
-		FieldDeclList SystemFields = new FieldDeclList();
-		FieldDecl FSystemOut = new FieldDecl(false, true, 
-				new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, "_PrintStream", null, null)), null), 
-				"out", null);
-		SystemFields.add(FSystemOut);
-		this.declare(new ClassDecl("System", SystemFields, new MethodDeclList()));
-		
-		// class _PrintStream
-		MethodDeclList PrintStreamMethods = new MethodDeclList();
-		ParameterDeclList PrintLnParams = new ParameterDeclList();
-		PrintLnParams.add(new ParameterDecl(new BaseType(TypeKind.INT, null), "n"));
-		PRINTLN_DECL = new MethodDecl(
-				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "println"),
-				PrintLnParams, new StatementList());
-		PrintStreamMethods.add(PRINTLN_DECL);
-		ClassDecl PrintStream = new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods);
-		this.declare(PrintStream);
-		
-		// class String
-		this.declare(UNSUPPORTED_STRING);
-		
-		// Visit types
-		((ClassType) FSystemOut.type).setDecl(PrintStream);
+		GlobalClasses.define(this);
 		
 		// Force main package layer
 		this.scopes.push(new Scope(null, true, Scope.Kind.PACKAGE));
@@ -148,6 +118,24 @@ public class ScopeStack {
 		}
 		
 		return decl;
+	}
+	
+	public void addStringLiteral(StringLiteral slit) {
+		StringLiteralDecl sld = this.stringLits.get(slit.spelling);
+		if (sld == null) {
+			sld = new StringLiteralDecl(slit.spelling);
+			this.stringLits.put(slit.spelling, sld);
+		}
+		slit.decl = sld;
+	}
+	
+	public StringLiteralDecl[] getStringLiteralDecls() {
+		Object[] vals = stringLits.values().toArray();
+		StringLiteralDecl[] sld = new StringLiteralDecl[vals.length];
+		for (int i = 0; i < vals.length; i++) {
+			sld[i] = (StringLiteralDecl) vals[i];
+		}
+		return sld;
 	}
 	
 	public ClassDecl getCurrentClass() {

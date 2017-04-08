@@ -68,9 +68,7 @@ public class Token {
 		return TokenKind.IDENTIFIER;
 	}
 	
-	/*
 	public String toString() {
 		return String.format("%s[%s]", getKind().toString(), getSpelling());
 	}
-	*/
 }

@@ -11,12 +11,12 @@ import static miniJava.SyntacticAnalyzer.TokenKind.ELSE;
 import static miniJava.SyntacticAnalyzer.TokenKind.EOT;
 import static miniJava.SyntacticAnalyzer.TokenKind.FALSE;
 import static miniJava.SyntacticAnalyzer.TokenKind.IDENTIFIER;
-import static miniJava.SyntacticAnalyzer.TokenKind.NULL;
 import static miniJava.SyntacticAnalyzer.TokenKind.IF;
 import static miniJava.SyntacticAnalyzer.TokenKind.INT;
 import static miniJava.SyntacticAnalyzer.TokenKind.MINUS;
 import static miniJava.SyntacticAnalyzer.TokenKind.NEW;
 import static miniJava.SyntacticAnalyzer.TokenKind.NOT;
+import static miniJava.SyntacticAnalyzer.TokenKind.NULL;
 import static miniJava.SyntacticAnalyzer.TokenKind.NUM;
 import static miniJava.SyntacticAnalyzer.TokenKind.PAREN_CLOSE;
 import static miniJava.SyntacticAnalyzer.TokenKind.PAREN_OPEN;
@@ -27,6 +27,7 @@ import static miniJava.SyntacticAnalyzer.TokenKind.SEMICOLON;
 import static miniJava.SyntacticAnalyzer.TokenKind.SQR_CLOSE;
 import static miniJava.SyntacticAnalyzer.TokenKind.SQR_OPEN;
 import static miniJava.SyntacticAnalyzer.TokenKind.STATIC;
+import static miniJava.SyntacticAnalyzer.TokenKind.STRING;
 import static miniJava.SyntacticAnalyzer.TokenKind.THIS;
 import static miniJava.SyntacticAnalyzer.TokenKind.TRUE;
 import static miniJava.SyntacticAnalyzer.TokenKind.VOID;
@@ -73,6 +74,7 @@ import miniJava.AbstractSyntaxTrees.Reference;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
 import miniJava.AbstractSyntaxTrees.StatementList;
+import miniJava.AbstractSyntaxTrees.StringLiteral;
 import miniJava.AbstractSyntaxTrees.ThisRef;
 import miniJava.AbstractSyntaxTrees.TypeDenoter;
 import miniJava.AbstractSyntaxTrees.TypeKind;
@@ -458,7 +460,7 @@ public class Parser {
 	
 	// Kinda helps with organization, overhead might not be worth it
 	private static TokenKind[] STARTERS_EXPRESSION = new TokenKind[] { 
-			PAREN_OPEN, NUM, TRUE, FALSE, NULL, NEW, 
+			PAREN_OPEN, NUM, TRUE, FALSE, NULL, NEW, STRING,
 			NOT, MINUS, // unop 
 			THIS, IDENTIFIER // STARTERS_REFERENCE
 		};
@@ -546,6 +548,9 @@ public class Parser {
 		} else if (kind == TokenKind.TRUE || kind == TokenKind.FALSE) {
 			Token bool_lit = acceptIt();
 			return new LiteralExpr(new BooleanLiteral(bool_lit), bool_lit.getStart());
+		} else if (kind == TokenKind.STRING) {
+			Token str_lit = acceptIt();
+			return new LiteralExpr(new StringLiteral(str_lit), str_lit.getStart());
 		} else if (kind == TokenKind.NEW) {
 			Token first_token = acceptIt();
 			if (ct.getKind() == IDENTIFIER) {

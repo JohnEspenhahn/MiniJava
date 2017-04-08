@@ -35,6 +35,8 @@ import miniJava.AbstractSyntaxTrees.QRef;
 import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
+import miniJava.AbstractSyntaxTrees.StringLiteral;
+import miniJava.AbstractSyntaxTrees.StringLiteralDecl;
 import miniJava.AbstractSyntaxTrees.ThisDecl;
 import miniJava.AbstractSyntaxTrees.ThisRef;
 import miniJava.AbstractSyntaxTrees.TypeKind;
@@ -43,6 +45,7 @@ import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
 import miniJava.AbstractSyntaxTrees.Visitor;
 import miniJava.AbstractSyntaxTrees.WhileStmt;
+import miniJava.CodeGenerator.GlobalClasses;
 import miniJava.ContextualAnalyzer.Exceptions.TypeException;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
@@ -53,8 +56,9 @@ public class TypeVisitor extends Visitor {
 	public TypeErrors visit(Package prog) {
 		this.mains = new ArrayList<MethodDecl>();
 		this.errors = new TypeErrors();	
-		visitPackage(prog, null);		
+		visitPackage(prog, null);
 		
+		// Find main
 		if (this.mains.size() == 1)
 			prog.main = mains.get(0);
 		
@@ -81,7 +85,7 @@ public class TypeVisitor extends Visitor {
 				if (decl.type instanceof ArrayType) {
 					ArrayType type = (ArrayType) decl.type;
 					if (type.eltType instanceof ClassType 
-							&& ((ClassType) type.eltType).getDecl() == ScopeStack.UNSUPPORTED_STRING) {
+							&& ((ClassType) type.eltType).getDecl() == GlobalClasses.STRING_DECL) {
 						mains.add(method);
 					}
 				}
@@ -123,6 +127,10 @@ public class TypeVisitor extends Visitor {
 		return (Type) decl.type.visit(this, null);
 	}
 	
+	@Override
+	public Object visitStringLiteralDecl(StringLiteralDecl sld, Object o) {
+		return GlobalClasses.TYPE_STRING;
+	}	
 	
 	@Override
 	public Type visitBaseType(BaseType type, Object arg) {
@@ -131,10 +139,6 @@ public class TypeVisitor extends Visitor {
 
 	@Override
 	public Type visitClassType(ClassType type, Object arg) {
-		// Special case
-		if (type.getDecl() == ScopeStack.UNSUPPORTED_STRING)
-			return Type.UNSUPPORTED;
-		
 		return new Type(TypeKind.CLASS, type.getDecl());
 	}
 
@@ -351,6 +355,11 @@ public class TypeVisitor extends Visitor {
 	@Override
 	public Type visitNullLiteral(NullLiteral nlit, Object arg) {
 		return Type.NULL;
+	}
+	
+	@Override
+	public Object visitStringLiteral(StringLiteral slit, Object arg) {
+		return GlobalClasses.TYPE_STRING;
 	}
 	
 	/**

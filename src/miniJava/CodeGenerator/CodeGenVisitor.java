@@ -37,6 +37,8 @@ import miniJava.AbstractSyntaxTrees.RefExpr;
 import miniJava.AbstractSyntaxTrees.Reference;
 import miniJava.AbstractSyntaxTrees.ReturnStmt;
 import miniJava.AbstractSyntaxTrees.Statement;
+import miniJava.AbstractSyntaxTrees.StringLiteral;
+import miniJava.AbstractSyntaxTrees.StringLiteralDecl;
 import miniJava.AbstractSyntaxTrees.ThisDecl;
 import miniJava.AbstractSyntaxTrees.ThisRef;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
@@ -44,8 +46,8 @@ import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
 import miniJava.AbstractSyntaxTrees.Visitor;
 import miniJava.AbstractSyntaxTrees.WhileStmt;
+import miniJava.CodeGenerator.RuntimeDescription.AbsoluteAddress;
 import miniJava.CodeGenerator.RuntimeModifier.RuntimeModifier;
-import miniJava.ContextualAnalyzer.ScopeStack;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class CodeGenVisitor extends Visitor {
@@ -68,17 +70,40 @@ public class CodeGenVisitor extends Visitor {
 				FieldDecl fd = cd.fieldDeclList.get(i);
 				if (fd.isStatic) {
 					fd.setAbsoluteAddress(staticAddrs);
-					staticAddrs += 1;
+					staticAddrs = staticAddrs+1;
 				} else {
 					fd.setObjectOffset(offset);
-					offset += 1;
+					offset = offset+1;
 				}
 			}
 			cd.instanceSize = offset+1;
 		}
 		
-		if (staticAddrs > 0)
-			Machine.emit(Op.PUSH, staticAddrs); // static fields
+		// static fields
+		if (staticAddrs > 0) Machine.emit(Op.PUSH, staticAddrs);
+		
+		// strings
+		int[] copyToHeap2Patch = new int[prog.stringLits.length];
+		for (int i = 0; i < prog.stringLits.length; i++) {
+			StringLiteralDecl str = prog.stringLits[i];
+
+			String spelling = str.name;
+			int str_length = spelling.length();			
+			for (int j = 0; j < str_length; j++) {
+				Machine.emit(Op.LOADL, spelling.charAt(j));
+			}
+			
+			Machine.emit(Op.LOADL, str_length);
+			Machine.emit(Prim.newarr); // alloc
+			copyToHeap2Patch[i] = Machine.nextInstrAddr();
+			Machine.emit(Op.CALL, Reg.CB, -1); // call copyToHeap
+			Machine.emit(Op.STORE, Reg.ST, -(str_length+1)); // setup pointer
+			Machine.emit(Op.POP, str_length-1);
+			
+			// Set address as pointer to array
+			str.setRuntimeDesc(new AbsoluteAddress(staticAddrs));
+			staticAddrs += 1;
+		}
 		
 		Machine.emit(Op.LOADL, 0); // arr length
 		Machine.emit(Prim.newarr);
@@ -91,6 +116,13 @@ public class CodeGenVisitor extends Visitor {
 		// Visit classes
 		for (ClassDecl cd: prog.classDeclList)
 			cd.visit(this, null);
+		
+		// Define global utility functions
+		GlobalClasses.defineStringEq();
+		
+		int copyToHeapAddr = GlobalClasses.defineCopyToHeap();
+		for (int i = 0; i < copyToHeap2Patch.length; i++)
+			Machine.patch(copyToHeap2Patch[i], copyToHeapAddr);
 		
 		return null;
 	}
@@ -190,18 +222,28 @@ public class CodeGenVisitor extends Visitor {
 		return null;
 	}
 	
-	private void handleCall(ExprList argList, Reference methodRef) {
-		// Load parameters to stack
-		for (Expression exp: argList)
-			exp.visit(this, null);
-		
-		// Check special case for println
-		if (methodRef.getDecl() == ScopeStack.PRINTLN_DECL) {
+	private void handleCall(ExprList argList, Reference methodRef) {		
+		// Check special cases
+		MethodDecl md = (MethodDecl) methodRef.getDecl();
+		if (md == GlobalClasses.PRINTLN_DECL) {
+			argList.get(0).visit(this, null); // Load int
 			Machine.emit(Prim.putintnl);
+			return;
+		} else if (md == GlobalClasses.STRING_CHARAT_DECL) {
+			((QRef) methodRef).ref.visit(this, null); // Load address of string
+			argList.get(0).visit(this,null); // Load index
+			Machine.emit(Prim.arrayref);
+			return;
+		} else if (md == GlobalClasses.STRING_LENGTH_DECL) {
+			((QRef) methodRef).ref.visit(this, null); // Load address of string
+			Machine.emit(Prim.arraylen);
 			return;
 		}
 		
-		MethodDecl md = (MethodDecl) methodRef.getDecl();		
+		// Load parameters to stack
+		for (Expression exp: argList)
+			exp.visit(this, null);
+				
 		if (md.isStatic) {
 			// Don't care about object
 			Machine.emit(Op.CALL, Reg.CB, -1);
@@ -339,10 +381,20 @@ public class CodeGenVisitor extends Visitor {
 
 	@Override
 	public Object visitNewObjectExpr(NewObjectExpr expr, Object arg) {		
-		Machine.emit(Op.LOADL, -1);
-		Machine.emit(Op.LOADL, expr.classtype.getDecl().instanceSize);
-		Machine.emit(Prim.newobj);
+		newInstance(expr.classtype.getDecl());
 		return null;
+	}
+	
+	private void newInstance(ClassDecl decl) {
+		if (decl == GlobalClasses.STRING_DECL) {
+			// Strings are really just arrays
+			Machine.emit(Op.LOADL, 0);
+			Machine.emit(Prim.newarr);
+		} else {
+			Machine.emit(Op.LOADL, -1);
+			Machine.emit(Op.LOADL, decl.instanceSize);
+			Machine.emit(Prim.newobj);	
+		}
 	}
 
 	@Override
@@ -459,6 +511,18 @@ public class CodeGenVisitor extends Visitor {
 	@Override
 	public Object visitArrayIdxDecl(ArrayIdxDecl decl, Object arg) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object visitStringLiteralDecl(StringLiteralDecl sld, Object o) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object visitStringLiteral(StringLiteral slit, Object arg) {
+		slit.decl.getRuntimeDesc().toBaseRuntimeModifier().load(this);
 		return null;
 	}
 

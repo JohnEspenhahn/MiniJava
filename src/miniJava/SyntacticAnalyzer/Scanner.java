@@ -124,6 +124,20 @@ public class Scanner {
 		} else if (cc == ';') {
 			takeIt();
 			return TokenKind.SEMICOLON;
+		} else if (cc == '"') {
+			skipIt();
+			boolean foundEnd = false;
+			while (cc != SourceFile.eol && cc != SourceFile.eot && !foundEnd) {
+				takeIt();
+				if (cc == '"') foundEnd = true;
+			}
+			
+			if (!foundEnd) {
+				return TokenKind.ERROR;
+			} else {
+				skipIt();
+				return TokenKind.STRING;
+			}
 		} else if (cc == '\'') {
             takeIt();
             if (cc == '\\') {
