@@ -10,3 +10,4 @@ test_indexing.mjava
 *.mjava
 *.asm
 *.mJAM
+src/tester/Checkpoint2new.java

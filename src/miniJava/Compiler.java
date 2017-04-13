@@ -54,6 +54,7 @@ public class Compiler {
 					} else {
 						(new CodeGenVisitor()).visit(pck);
 						writeObjFiles(fileName + ".mJAM");
+						System.exit(0);
 					}
 				} else {
 					System.exit(4);

@@ -166,7 +166,8 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 	@Override
 	public Type visitCallStmt(CallStmt stmt, Object arg) {
-		MethodDecl decl = (MethodDecl) stmt.methodRef.getDecl();
+		Declaration baseDecl = stmt.methodRef.getDecl();
+		MethodDecl decl = (MethodDecl) baseDecl;
 		if (decl.parameterDeclList.size() != stmt.argList.size()) {
 			this.errors.add(new TypeException("Argument list length doesn't match declaration", stmt));
 		} else {
@@ -194,7 +195,9 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 	@Override
 	public Type visitIfStmt(IfStmt stmt, Object arg) {
-		stmt.cond.visit(this, null);
+		Type condType = stmt.cond.visit(this, null);
+		checkEquals(condType, Type.BOOLEAN, stmt.cond);		
+		
 		stmt.thenStmt.visit(this, null);
 		if (stmt.elseStmt != null)
 			stmt.elseStmt.visit(this, null);
@@ -203,7 +206,9 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 	@Override
 	public Type visitWhileStmt(WhileStmt stmt, Object arg) {
-		stmt.cond.visit(this, null);
+		Type condType = stmt.cond.visit(this, null);
+		checkEquals(condType, Type.BOOLEAN, stmt.cond);
+		
 		stmt.body.visit(this, null);
 		return Type.UNSUPPORTED;
 	}
@@ -292,10 +297,9 @@ public class TypeVisitor implements Visitor<Object, Type> {
 	@Override
 	public Type visitIdRef(IdRef ref, Object arg) {
 		Declaration decl = ref.getDecl();
-		if (decl instanceof MethodDecl)
-			return Type.UNSUPPORTED;
-		else
-			return decl.type.visit(this, null);
+		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
+		else return decl.type.visit(this, null);
 	}
 
 	@Override
@@ -305,6 +309,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		
 		Declaration decl = ref.getDecl();
 		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
 		else return decl.type.visit(this, null);
 	}
 
@@ -312,6 +317,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 	public Type visitQRef(QRef ref, Object arg) {
 		Declaration decl = ref.getDecl();
 		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
 		else return decl.type.visit(this, null);
 	}
 
@@ -322,6 +328,7 @@ public class TypeVisitor implements Visitor<Object, Type> {
 
 		Declaration decl = ref.getDecl();
 		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
 		else return decl.type.visit(this, null);
 	}
 
@@ -372,11 +379,15 @@ public class TypeVisitor implements Visitor<Object, Type> {
 		else if (t1.kind == TypeKind.CLASS && t2.kind == TypeKind.CLASS && t1.decl == t2.decl)
 			return t1;
 		else if (t1.kind == TypeKind.CLASS && t2.kind == TypeKind.NULL)
-			return Type.NULL;
+			return t1;
 		else if (t2.kind == TypeKind.CLASS && t1.kind == TypeKind.NULL)
-			return Type.NULL;
+			return t2;
 		else if (t1.kind == TypeKind.NULL && t2.kind == TypeKind.NULL)
 			return Type.NULL;
+		else if (t1.kind == TypeKind.ARRAY && t2.kind == TypeKind.NULL)
+			return t1;
+		else if (t2.kind == TypeKind.ARRAY && t1.kind == TypeKind.NULL)
+			return t2;
 		else if (t1.kind == TypeKind.ARRAY && t2.kind == TypeKind.ARRAY)
 			return checkEquals(t1.ixType, t2.ixType, ast);
 		else {

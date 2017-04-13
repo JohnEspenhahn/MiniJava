@@ -227,14 +227,6 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 	}
 
 	@Override
-	public Object visitCallStmt(CallStmt stmt, ScopeStack scope) {
-		stmt.methodRef.visit(this, scope);
-		for (Expression e: stmt.argList)
-			e.visit(this, scope);
-		return null;
-	}
-
-	@Override
 	public Object visitReturnStmt(ReturnStmt stmt, ScopeStack scope) {
 		stmt.wrappingMethod = scope.getCurrentMethod();
 		if (stmt.returnExpr != null) stmt.returnExpr.visit(this, scope);	
@@ -286,10 +278,24 @@ public class IdentificationVisitor implements Visitor<ScopeStack, Object> {
 		expr.ref.visit(this, scope);
 		return null;
 	}
+	
+	@Override
+	public Object visitCallStmt(CallStmt stmt, ScopeStack scope) {
+		stmt.methodRef.visit(this, scope);
+		if (!(stmt.methodRef.getDecl() instanceof MethodDecl))
+			throw new UndefinedReferenceException(stmt.methodRef);
+		
+		for (Expression e: stmt.argList)
+			e.visit(this, scope);
+		return null;
+	}
 
 	@Override
 	public Object visitCallExpr(CallExpr expr, ScopeStack scope) {
 		expr.methodRef.visit(this, scope);
+		if (!(expr.methodRef.getDecl() instanceof MethodDecl))
+			throw new UndefinedReferenceException(expr.methodRef);
+		
 		for (Expression e: expr.argList)
 			e.visit(this, scope);
 		return null;
