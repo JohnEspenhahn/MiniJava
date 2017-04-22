@@ -26,6 +26,7 @@ import miniJava.AbstractSyntaxTrees.IxIdRef;
 import miniJava.AbstractSyntaxTrees.IxQRef;
 import miniJava.AbstractSyntaxTrees.LiteralExpr;
 import miniJava.AbstractSyntaxTrees.MethodDecl;
+import miniJava.AbstractSyntaxTrees.MethodOverloadDecl;
 import miniJava.AbstractSyntaxTrees.NewArrayExpr;
 import miniJava.AbstractSyntaxTrees.NewObjectExpr;
 import miniJava.AbstractSyntaxTrees.NullLiteral;
@@ -76,6 +77,8 @@ public class TypeVisitor extends Visitor {
 
 	@Override
 	public Type visitClassDecl(ClassDecl cd, Object arg) {
+		cd.scope.validateOverloading(this);
+		
 		for (MethodDecl method : cd.methodDeclList) {
 			method.visit(this, null);
 
@@ -181,7 +184,12 @@ public class TypeVisitor extends Visitor {
 			pTypes[i] = (Type) stmt.argList.get(i).visit(this, null);
 
 		MethodDecl decl = (MethodDecl) baseDecl;
-		if (decl.getParamCount() != stmt.argList.size()) {
+		if (decl instanceof MethodOverloadDecl)
+			decl = ((MethodOverloadDecl) decl).getMethod(pTypes, this);
+		
+		if (decl == null) {
+			this.errors.add(new TypeException("A method with the given parameter types could not be found", stmt));
+		} else if (decl.getParamCount() != stmt.argList.size()) {
 			this.errors.add(new TypeException("Argument list length doesn't match declaration", stmt));
 		} else {
 			for (int i = 0; i < decl.getParamCount(); i++) {
@@ -191,6 +199,19 @@ public class TypeVisitor extends Visitor {
 			}
 		}
 
+		return (Type) decl.type.visit(this, null);
+	}
+	
+	@Override
+	public Type visitCallExpr(CallExpr expr, Object arg) {
+		MethodDecl decl = (MethodDecl) expr.methodRef.getDecl();
+		for (int i = 0; i < decl.getParamCount(); i++) {
+			ParameterDecl p = decl.getParameter(i);
+
+			Type pType = (Type) p.visit(this, null);
+			Type expType = (Type) expr.argList.get(i).visit(this, null);
+			checkEquals(pType, expType, expr);
+		}
 		return (Type) decl.type.visit(this, null);
 	}
 
@@ -270,19 +291,6 @@ public class TypeVisitor extends Visitor {
 	@Override
 	public Type visitRefExpr(RefExpr expr, Object arg) {
 		return (Type) expr.ref.visit(this, null);
-	}
-
-	@Override
-	public Type visitCallExpr(CallExpr expr, Object arg) {
-		MethodDecl decl = (MethodDecl) expr.methodRef.getDecl();
-		for (int i = 0; i < decl.getParamCount(); i++) {
-			ParameterDecl p = decl.getParameter(i);
-
-			Type pType = (Type) p.visit(this, null);
-			Type expType = (Type) expr.argList.get(i).visit(this, null);
-			checkEquals(pType, expType, expr);
-		}
-		return (Type) decl.type.visit(this, null);
 	}
 
 	@Override

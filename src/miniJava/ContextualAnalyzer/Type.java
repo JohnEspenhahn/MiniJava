@@ -64,7 +64,19 @@ public class Type {
 	
 	@Override
 	public String toString() {
-		return kind.toString();
+		if (kind == TypeKind.CLASS) {
+			return decl.toString();
+		} else if (kind == TypeKind.ARRAY) {
+			return ixType.toString() + "[]";
+		} else if (kind == TypeKind.BOOLEAN) {
+			return "bool";
+		} else if (kind == TypeKind.INT) {
+			return "int";
+		} else if (kind == TypeKind.VOID) {
+			return "void";
+		} else {
+			return "error";
+		}
 	}
 	
 }

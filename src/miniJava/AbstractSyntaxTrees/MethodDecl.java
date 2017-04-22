@@ -16,9 +16,7 @@ public class MethodDecl extends MemberDecl {
 	private StatementList statementList;
 	
 	private int address;
-	private ArrayList<Integer> toPatch; 
-	
-	public MemberDecl md;
+	private ArrayList<Integer> toPatch;
 
 	public MethodDecl(MemberDecl md, ParameterDeclList pl, StatementList sl) {
 		this(md, pl, sl, SourcePosition.ZERO);
@@ -27,7 +25,6 @@ public class MethodDecl extends MemberDecl {
 	public MethodDecl(MemberDecl md, ParameterDeclList pl, StatementList sl, SourcePosition posn) {
 		super(md, posn);
 		
-		this.md = md;
 		parameterDeclList = pl;
 		statementList = sl;
 		

@@ -1,9 +1,12 @@
 package miniJava.ContextualAnalyzer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import miniJava.AbstractSyntaxTrees.Declaration;
+import miniJava.AbstractSyntaxTrees.MethodDecl;
+import miniJava.AbstractSyntaxTrees.MethodOverloadDecl;
 import miniJava.ContextualAnalyzer.Exceptions.DanglingDefinitionException;
 import miniJava.ContextualAnalyzer.Exceptions.DuplicateDefinitionException;
 
@@ -20,6 +23,24 @@ public class Scope {
 		this.kind = kind;
 		
 		this.decls = new HashMap<String, Declaration>();
+	}
+	
+	public void validateOverloading(TypeVisitor visitor) {
+		// Only used for classes, could be better, but whatever
+		Object[] ds = decls.values().toArray();
+		for (int i = 0; i < ds.length; i++) {
+			Declaration d = (Declaration) ds[i];
+			if (d instanceof MethodOverloadDecl) {
+				Type t1 = null;
+				MethodOverloadDecl mod = (MethodOverloadDecl) d;
+				for (int j = 0; j < mod.getMethodCount(); j++) {
+					MethodDecl method = mod.getMethod(j);
+					Type t2 = (Type) method.type.visit(visitor, null);
+					if (t1 == null) t1 = t2;
+					else visitor.checkEquals(t1, t2, method);
+				}
+			}
+		}
 	}
 	
 	public void add(Declaration decl) {

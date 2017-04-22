@@ -7,11 +7,27 @@ import miniJava.ContextualAnalyzer.TypeVisitor;
 
 public class MethodOverloadDecl extends MethodDecl {
 	private ArrayList<MethodDecl> mds;
+	
 
-	public MethodOverloadDecl(ArrayList<MethodDecl> mds) {	
-		super(mds.get(0).md, null, null);
+	public MethodOverloadDecl(MethodDecl m1, MethodDecl m2) {	
+		super(m1, null, null);
 		
-		this.mds = mds;
+		this.mds = new ArrayList<MethodDecl>();
+		this.mds.add(m1); // Defining method
+		
+		addMethod(m2);
+	}
+	
+	public void addMethod(MethodDecl m) {
+		this.mds.add(m);
+	}
+	
+	public int getMethodCount() {
+		return mds.size();
+	}
+	
+	public MethodDecl getMethod(int i) {
+		return mds.get(i);
 	}
 	
 	public MethodDecl getMethod(Type[] types, TypeVisitor visitor) {

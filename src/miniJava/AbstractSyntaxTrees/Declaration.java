@@ -10,7 +10,10 @@ import miniJava.ContextualAnalyzer.Exceptions.UndefinedReferenceException;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class Declaration extends AST {
+	private static int DECL_ID = 0; // Bad system, but works for now
 
+	public int id;
+	
 	public String name;
 	public TypeDenoter type;
 	private RuntimeDescription rd;
@@ -26,6 +29,9 @@ public abstract class Declaration extends AST {
 
 		// Processing flags
 		this.being_declared = false;
+		
+		this.id = DECL_ID;
+		DECL_ID = DECL_ID + 1;
 	}
 
 	/*

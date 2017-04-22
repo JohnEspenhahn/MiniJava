@@ -55,4 +55,9 @@ public class ClassDecl extends Declaration {
 		else if (requireStatic && !decl.allowStaticReference()) throw new StaticReferenceException(ident);
 		return (MemberDecl) decl;
 	}
+	
+	@Override
+	public String toString() {
+		return "class_" + id;
+	}
 }
