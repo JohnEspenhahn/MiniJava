@@ -331,8 +331,35 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 	@Override
 	public Object visitBinaryExpr(BinaryExpr expr, Object arg) {
 		expr.left.visit(this, null);
+		
+		int short_circuit = -1;
+		if (expr.operator.kind == TokenKind.AND) { 
+			// Short circuit and if first condition false
+			short_circuit = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF, 0, Reg.CB, -1);
+		} else if (expr.operator.kind == TokenKind.OR) {
+			short_circuit = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF, 1, Reg.CB, -1);
+		}
+		
 		expr.right.visit(this, null);
 		expr.operator.visit(this, null);
+		
+		if (short_circuit >= 0) {
+			// Skip re-pushing value if didn't jump short circuit
+			int skip = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMP, Reg.CB, -1);
+			
+			// Re-push short circuit value
+			Machine.patch(short_circuit, Machine.nextInstrAddr());
+			if (expr.operator.kind == TokenKind.AND)
+				Machine.emit(Op.LOADL, 0); // "and". Must be false
+			else
+				Machine.emit(Op.LOADL, 1); // "or". Must be true
+			
+			Machine.patch(skip, Machine.nextInstrAddr());
+		}
+		
 		return null;
 	}
 
