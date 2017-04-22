@@ -111,13 +111,13 @@ public class Parser {
 
 		ClassDeclList classes = new ClassDeclList();
 		try {
-			while (ct.getKind() == CLASS) {
+			TokenKind k = ct.getKind();
+			while (k == PUBLIC || k == CLASS) {
 				classes.add(parseClassDec());
+				k = ct.getKind();
 			}
 
-			if (ct.getKind() != EOT) {
-				throw new SyntaxError(lexer.getSourceFile(), EOT, ct);
-			}
+			if (k != EOT) throw new SyntaxError(lexer.getSourceFile(), EOT, ct);
 		} catch (SyntaxError e) {
 			if (print_stacktrace) e.printStackTrace();
 			else System.err.println(e.getMessage());
@@ -128,6 +128,10 @@ public class Parser {
 	}
 
 	ClassDecl parseClassDec() throws SyntaxError {
+		// Optionally allow "public class"
+		if (ct.getKind() == TokenKind.PUBLIC)
+			acceptIt();
+		
 		accept(CLASS);
 		Token cn = accept(IDENTIFIER);
 		accept(CURL_OPEN);
