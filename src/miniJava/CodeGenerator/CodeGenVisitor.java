@@ -190,7 +190,14 @@ public class CodeGenVisitor implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitCallStmt(CallStmt stmt, Object arg) {
-		handleCall(stmt.argList, stmt.methodRef);		
+		handleCall(stmt.argList, stmt.methodRef);
+		
+		// Stand alone call, pop non-void return value
+		Declaration methodDecl = stmt.methodRef.getDecl();
+		if (methodDecl.type.typeKind != TypeKind.VOID) {
+			Machine.emit(Op.POP, 1);
+		}
+		
 		return null;
 	}
 
