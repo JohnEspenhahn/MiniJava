@@ -31,6 +31,7 @@ public class GlobalClasses {
 	public static MethodDecl STRING_EQUALS_DECL;
 	
 	public static MethodDecl PRINTLN_DECL;
+	public static MethodDecl PRINT_DECL;
 	
 	static {
 		CLASSTYPE_STRING = new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, "String")));
@@ -71,7 +72,11 @@ public class GlobalClasses {
 				new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, "_PrintStream", null, null)), null), 
 				"out", null);
 		SystemFields.add(FSystemOut);
-		stack.declare(new ClassDecl("System", SystemFields, new MethodDeclList()));
+		ClassDecl System = new ClassDecl("System", SystemFields, new MethodDeclList());
+		stack.declare(System);
+		stack.openScope(System);
+		stack.declare(FSystemOut);
+		stack.closeScope();
 		
 		// class _PrintStream
 		MethodDeclList PrintStreamMethods = new MethodDeclList();
@@ -80,12 +85,27 @@ public class GlobalClasses {
 		PRINTLN_DECL = new MethodDecl(
 				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "println"),
 				PrintLnParams, new StatementList());
-		PrintStreamMethods.add(PRINTLN_DECL);
+		PrintStreamMethods.add(PRINTLN_DECL);		
+		ParameterDeclList PrintParams = new ParameterDeclList();
+		PrintParams.add(new ParameterDecl(new BaseType(TypeKind.INT, null), "n"));
+		PRINT_DECL = new MethodDecl(
+				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "print"),
+				PrintParams, new StatementList());
+		PrintStreamMethods.add(PRINT_DECL);
 		ClassDecl PrintStream = new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods);
 		stack.declare(PrintStream);
+		stack.openScope(PrintStream);
+		stack.declare(PRINTLN_DECL);
+		stack.declare(PRINT_DECL);
+		stack.closeScope();
 		
 		// class String
 		stack.declare(STRING_DECL);
+		stack.openScope(STRING_DECL);
+		stack.declare(STRING_CHARAT_DECL);
+		stack.declare(STRING_LENGTH_DECL);
+		stack.declare(STRING_EQUALS_DECL);
+		stack.closeScope();
 		
 		// Visit types
 		((ClassType) FSystemOut.type).setDecl(PrintStream);

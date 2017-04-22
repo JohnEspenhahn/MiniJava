@@ -5,6 +5,7 @@
  */
 package miniJava.AbstractSyntaxTrees;
 
+import miniJava.ContextualAnalyzer.Scope;
 import miniJava.ContextualAnalyzer.Exceptions.StaticReferenceException;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 import miniJava.SyntacticAnalyzer.Token;
@@ -15,6 +16,8 @@ public class ClassDecl extends Declaration {
 	
 	public FieldDeclList fieldDeclList;
 	public MethodDeclList methodDeclList;
+	
+	public Scope scope;
 	
 	public ClassDecl(String cn, FieldDeclList fdl, MethodDeclList mdl) {
 		this(cn, fdl, mdl, SourcePosition.ZERO);
@@ -47,18 +50,9 @@ public class ClassDecl extends Declaration {
 	
 	public MemberDecl getMember(Identifier ident, boolean requireStatic) {
 		// Accessing class directly, so don't allow access to instance variables
-		for (FieldDecl f: fieldDeclList)
-			if (f.name.equals(ident.spelling)) {
-				if (requireStatic && !f.allowStaticReference()) throw new StaticReferenceException(ident);
-				else return f;
-			}
-		
-		for (MethodDecl m: methodDeclList)
-			if (m.name.equals(ident.spelling)) {
-				if (requireStatic && !m.allowStaticReference()) throw new StaticReferenceException(ident);
-				else return m;
-			}
-		
-		return null;
+		Declaration decl = scope.get(ident.spelling);
+		if (decl == null) return null;
+		else if (requireStatic && !decl.allowStaticReference()) throw new StaticReferenceException(ident);
+		return (MemberDecl) decl;
 	}
 }

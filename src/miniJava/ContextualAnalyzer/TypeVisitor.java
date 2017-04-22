@@ -16,6 +16,7 @@ import miniJava.AbstractSyntaxTrees.CallStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.ClassType;
 import miniJava.AbstractSyntaxTrees.Declaration;
+import miniJava.AbstractSyntaxTrees.ExprList;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
 import miniJava.AbstractSyntaxTrees.IdRef;
 import miniJava.AbstractSyntaxTrees.Identifier;
@@ -55,19 +56,19 @@ public class TypeVisitor extends Visitor {
 
 	public TypeErrors visit(Package prog) {
 		this.mains = new ArrayList<MethodDecl>();
-		this.errors = new TypeErrors();	
+		this.errors = new TypeErrors();
 		visitPackage(prog, null);
-		
+
 		// Find main
 		if (this.mains.size() == 1)
 			prog.main = mains.get(0);
-		
+
 		return errors;
 	}
-	
+
 	@Override
 	public Type visitPackage(Package prog, Object arg) {
-		for (ClassDecl decl: prog.classDeclList) {
+		for (ClassDecl decl : prog.classDeclList) {
 			decl.visit(this, null);
 		}
 		return Type.UNSUPPORTED; // Always OK
@@ -75,16 +76,16 @@ public class TypeVisitor extends Visitor {
 
 	@Override
 	public Type visitClassDecl(ClassDecl cd, Object arg) {
-		for (MethodDecl method: cd.methodDeclList) {
+		for (MethodDecl method : cd.methodDeclList) {
 			method.visit(this, null);
-			
+
 			// Check if public static void main(String[])
 			if (method.isStatic && !method.isPrivate && method.name.equals("main")
-					&& method.type.typeKind == TypeKind.VOID && method.parameterDeclList.size() == 1) {
-				ParameterDecl decl = method.parameterDeclList.get(0);
+					&& method.type.typeKind == TypeKind.VOID && method.getParamCount() == 1) {
+				ParameterDecl decl = method.getParameter(0);
 				if (decl.type instanceof ArrayType) {
 					ArrayType type = (ArrayType) decl.type;
-					if (type.eltType instanceof ClassType 
+					if (type.eltType instanceof ClassType
 							&& ((ClassType) type.eltType).getDecl() == GlobalClasses.STRING_DECL) {
 						mains.add(method);
 					}
@@ -101,7 +102,8 @@ public class TypeVisitor extends Visitor {
 
 	@Override
 	public Type visitMethodDecl(MethodDecl md, Object arg) {
-		for (Statement s: md.statementList) {
+		for (int i = 0; i < md.getStmtCount(); i++) {
+			Statement s = md.getStatement(i);
 			s.visit(this, null);
 		}
 		return Type.UNSUPPORTED;
@@ -117,21 +119,21 @@ public class TypeVisitor extends Visitor {
 		return (Type) decl.type.visit(this, null);
 	}
 
-	@Override 
+	@Override
 	public Type visitThisDecl(ThisDecl decl, Object arg) {
 		return (Type) decl.type.visit(this, null);
 	}
-	
+
 	@Override
 	public Type visitArrayIdxDecl(ArrayIdxDecl decl, Object arg) {
 		return (Type) decl.type.visit(this, null);
 	}
-	
+
 	@Override
 	public Object visitStringLiteralDecl(StringLiteralDecl sld, Object o) {
 		return GlobalClasses.TYPE_STRING;
-	}	
-	
+	}
+
 	@Override
 	public Type visitBaseType(BaseType type, Object arg) {
 		return new Type(type.typeKind);
@@ -149,7 +151,7 @@ public class TypeVisitor extends Visitor {
 
 	@Override
 	public Type visitBlockStmt(BlockStmt stmt, Object arg) {
-		for (Statement s: stmt.sl) {
+		for (Statement s : stmt.sl) {
 			s.visit(this, null);
 		}
 		return Type.UNSUPPORTED;
@@ -172,18 +174,23 @@ public class TypeVisitor extends Visitor {
 	@Override
 	public Type visitCallStmt(CallStmt stmt, Object arg) {
 		Declaration baseDecl = stmt.methodRef.getDecl();
+
+		ExprList argList = stmt.argList;
+		Type[] pTypes = new Type[argList.size()];
+		for (int i = 0; i < argList.size(); i++)
+			pTypes[i] = (Type) stmt.argList.get(i).visit(this, null);
+
 		MethodDecl decl = (MethodDecl) baseDecl;
-		if (decl.parameterDeclList.size() != stmt.argList.size()) {
+		if (decl.getParamCount() != stmt.argList.size()) {
 			this.errors.add(new TypeException("Argument list length doesn't match declaration", stmt));
 		} else {
-			for (int i = 0; i < decl.parameterDeclList.size() && i < stmt.argList.size(); i++) {
-				ParameterDecl p = decl.parameterDeclList.get(i);
-				
-				Type pType = (Type) p.visit(this, null);
-				Type expType = (Type) stmt.argList.get(i).visit(this, null);
-				checkEquals(pType, expType, stmt);
-			}	
+			for (int i = 0; i < decl.getParamCount(); i++) {
+				ParameterDecl p = decl.getParameter(i);
+				Type type = (Type) p.visit(this, null);
+				checkEquals(type, pTypes[i], stmt);
+			}
 		}
+
 		return (Type) decl.type.visit(this, null);
 	}
 
@@ -193,7 +200,7 @@ public class TypeVisitor extends Visitor {
 		if (stmt.returnExpr == null) {
 			return checkEquals(methodType, Type.VOID, stmt);
 		}
-		
+
 		Type returnType = (Type) stmt.returnExpr.visit(this, null);
 		return checkEquals(methodType, returnType, stmt);
 	}
@@ -201,8 +208,8 @@ public class TypeVisitor extends Visitor {
 	@Override
 	public Type visitIfStmt(IfStmt stmt, Object arg) {
 		Type condType = (Type) stmt.cond.visit(this, null);
-		checkEquals(condType, Type.BOOLEAN, stmt.cond);		
-		
+		checkEquals(condType, Type.BOOLEAN, stmt.cond);
+
 		stmt.thenStmt.visit(this, null);
 		if (stmt.elseStmt != null)
 			stmt.elseStmt.visit(this, null);
@@ -213,7 +220,7 @@ public class TypeVisitor extends Visitor {
 	public Type visitWhileStmt(WhileStmt stmt, Object arg) {
 		Type condType = (Type) stmt.cond.visit(this, null);
 		checkEquals(condType, Type.BOOLEAN, stmt.cond);
-		
+
 		stmt.body.visit(this, null);
 		return Type.UNSUPPORTED;
 	}
@@ -229,7 +236,7 @@ public class TypeVisitor extends Visitor {
 			checkEquals(exprType, Type.BOOLEAN, expr);
 			return Type.BOOLEAN;
 		} else {
-			throw new RuntimeException("Unhandled unary operator " + expr.operator.spelling);	
+			throw new RuntimeException("Unhandled unary operator " + expr.operator.spelling);
 		}
 	}
 
@@ -244,14 +251,14 @@ public class TypeVisitor extends Visitor {
 			return Type.BOOLEAN;
 		} else if (kind == TokenKind.EQU || kind == TokenKind.NOT_EQU) {
 			checkEquals(leftType, rightType, expr);
-			return Type.BOOLEAN;	
-		} else if (kind == TokenKind.LSS || kind == TokenKind.GTR
-				|| kind == TokenKind.GTR_EQU || kind == TokenKind.LSS_EQU) {
+			return Type.BOOLEAN;
+		} else if (kind == TokenKind.LSS || kind == TokenKind.GTR || kind == TokenKind.GTR_EQU
+				|| kind == TokenKind.LSS_EQU) {
 			checkEquals(leftType, Type.INT, expr);
 			checkEquals(rightType, Type.INT, expr);
 			return Type.BOOLEAN;
-		} else if (kind == TokenKind.PLUS || kind == TokenKind.MINUS
-				|| kind == TokenKind.MULT || kind == TokenKind.DIV) {
+		} else if (kind == TokenKind.PLUS || kind == TokenKind.MINUS || kind == TokenKind.MULT
+				|| kind == TokenKind.DIV) {
 			checkEquals(leftType, Type.INT, expr);
 			checkEquals(rightType, Type.INT, expr);
 			return Type.INT;
@@ -268,9 +275,9 @@ public class TypeVisitor extends Visitor {
 	@Override
 	public Type visitCallExpr(CallExpr expr, Object arg) {
 		MethodDecl decl = (MethodDecl) expr.methodRef.getDecl();
-		for (int i = 0; i < decl.parameterDeclList.size(); i++) {
-			ParameterDecl p = decl.parameterDeclList.get(i);
-			
+		for (int i = 0; i < decl.getParamCount(); i++) {
+			ParameterDecl p = decl.getParameter(i);
+
 			Type pType = (Type) p.visit(this, null);
 			Type expType = (Type) expr.argList.get(i).visit(this, null);
 			checkEquals(pType, expType, expr);
@@ -304,28 +311,37 @@ public class TypeVisitor extends Visitor {
 	@Override
 	public Type visitIdRef(IdRef ref, Object arg) {
 		Declaration decl = ref.getDecl();
-		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
-		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
-		else return (Type) decl.type.visit(this, null);
+		if (decl instanceof MethodDecl)
+			return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl)
+			return Type.UNSUPPORTED;
+		else
+			return (Type) decl.type.visit(this, null);
 	}
 
 	@Override
 	public Type visitIxIdRef(IxIdRef ref, Object arg) {
 		Type ixType = (Type) ref.indexExpr.visit(this, null);
 		checkEquals(ixType, Type.INT, ref.indexExpr);
-		
+
 		Declaration decl = ref.getDecl();
-		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
-		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
-		else return (Type) decl.type.visit(this, null);
+		if (decl instanceof MethodDecl)
+			return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl)
+			return Type.UNSUPPORTED;
+		else
+			return (Type) decl.type.visit(this, null);
 	}
 
 	@Override
 	public Type visitQRef(QRef ref, Object arg) {
 		Declaration decl = ref.getDecl();
-		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
-		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
-		else return (Type) decl.type.visit(this, null);
+		if (decl instanceof MethodDecl)
+			return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl)
+			return Type.UNSUPPORTED;
+		else
+			return (Type) decl.type.visit(this, null);
 	}
 
 	@Override
@@ -334,9 +350,12 @@ public class TypeVisitor extends Visitor {
 		checkEquals(ixType, Type.INT, ref.ixExpr);
 
 		Declaration decl = ref.getDecl();
-		if (decl instanceof MethodDecl) return Type.UNSUPPORTED;
-		else if (decl instanceof ClassDecl) return Type.UNSUPPORTED;
-		else return (Type) decl.type.visit(this, null);
+		if (decl instanceof MethodDecl)
+			return Type.UNSUPPORTED;
+		else if (decl instanceof ClassDecl)
+			return Type.UNSUPPORTED;
+		else
+			return (Type) decl.type.visit(this, null);
 	}
 
 	@Override
@@ -363,21 +382,36 @@ public class TypeVisitor extends Visitor {
 	public Type visitNullLiteral(NullLiteral nlit, Object arg) {
 		return Type.NULL;
 	}
-	
+
 	@Override
 	public Object visitStringLiteral(StringLiteral slit, Object arg) {
 		return GlobalClasses.TYPE_STRING;
 	}
-	
+
 	/**
-	 * Check for type equality. Adds an error to this.errors if the are not equal
-	 * @param t1 The main type
-	 * @param t2 The secondary type
-	 * @param ast The AST in which the types exist
+	 * Check for type equality. Adds an error to this.errors if the are not
+	 * equal
+	 * 
+	 * @param t1
+	 *            The main type
+	 * @param t2
+	 *            The secondary type
+	 * @param ast
+	 *            The AST in which the types exist
 	 * @return The type that results from an equality comparison of the types.
 	 */
 	public Type checkEquals(Type t1, Type t2, AST ast) {
-		if (t1.kind == TypeKind.INT && t2.kind == TypeKind.INT) 
+		Type res = staticCheckEquals(t1, t2);
+		if (res != Type.ERROR) {
+			return res;
+		} else {
+			this.errors.add(new TypeException(t1, t2, ast));
+			return Type.ERROR;
+		}
+	}
+
+	public static Type staticCheckEquals(Type t1, Type t2) {
+		if (t1.kind == TypeKind.INT && t2.kind == TypeKind.INT)
 			return Type.INT;
 		else if (t1.kind == TypeKind.BOOLEAN && t2.kind == TypeKind.BOOLEAN)
 			return Type.BOOLEAN;
@@ -401,9 +435,8 @@ public class TypeVisitor extends Visitor {
 		else if (t2.kind == TypeKind.ARRAY && t1.kind == TypeKind.NULL)
 			return t2;
 		else if (t1.kind == TypeKind.ARRAY && t2.kind == TypeKind.ARRAY)
-			return checkEquals(t1.ixType, t2.ixType, ast);
+			return staticCheckEquals(t1.ixType, t2.ixType);
 		else {
-			this.errors.add(new TypeException(t1, t2, ast));
 			return Type.ERROR;
 		}
 	}

@@ -75,15 +75,28 @@ public class IdentificationVisitor extends Visitor {
 	public Object visitPackage(Package prog, Object arg) {
 		if (scope == null) scope = new ScopeStack();
 		
-		for (ClassDecl c: prog.classDeclList)
-			scope.declare(c);
+		// Setup class level scope
+		for (int i = 0; i < prog.classDeclList.size(); i++) {
+			ClassDecl cd = prog.classDeclList.get(i);
+			scope.declare(cd);
+		}
 		
-		// Visit types of all publicly accessible variables in each class (don't add to scope yet)
-		for (ClassDecl c: prog.classDeclList) {
-			for (FieldDecl fd: c.fieldDeclList)
+		// Setup class member scopes / types (don't visit member yet)
+		for (int i = 0; i < prog.classDeclList.size(); i++) {
+			ClassDecl cd = prog.classDeclList.get(i);
+			scope.openScope(cd);
+			
+			cd.type.visit(this, scope);
+			for (FieldDecl fd: cd.fieldDeclList) {
 				fd.type.visit(this, scope);
-			for (MethodDecl md: c.methodDeclList)
+				scope.declare(fd);
+			}
+			for (MethodDecl md: cd.methodDeclList) {
 				md.type.visit(this, scope);
+				scope.declare(md);
+			}
+			
+			scope.closeScope();
 		}
 		
 		// Visit all publicly accessible classes
@@ -96,12 +109,6 @@ public class IdentificationVisitor extends Visitor {
 	@Override
 	public Object visitClassDecl(ClassDecl cd, Object arg) {
 		scope.openScope(cd);
-		
-		cd.type.visit(this, scope);
-		for (FieldDecl fd: cd.fieldDeclList)
-			scope.declare(fd);
-		for (MethodDecl md: cd.methodDeclList)
-			scope.declare(md);
 		
 		for (FieldDecl fd: cd.fieldDeclList)
 			fd.visit(this, scope);
@@ -121,18 +128,23 @@ public class IdentificationVisitor extends Visitor {
 	@Override
 	public Object visitMethodDecl(MethodDecl md, Object arg) {
 		scope.openScope(md);
-		for (ParameterDecl pd: md.parameterDeclList)
+		for (int i = 0; i < md.getParamCount(); i++) {
+			ParameterDecl pd = md.getParameter(i);
 			scope.declare(pd);
-		for (ParameterDecl pd: md.parameterDeclList)
+		}
+		for (int i = 0; i < md.getParamCount(); i++) {
+			ParameterDecl pd = md.getParameter(i);
 			pd.visit(this, scope);
+		}
 		
-		scope.openScope(md.statementList);
-		for (Statement s: md.statementList) {
+		scope.openBasicStatementListScope();
+		for (int i = 0; i < md.getStmtCount(); i++) {
+			Statement s = md.getStatement(i);
 			s.visit(this, scope);
 		}
 		
-		if (md.statementList.size() > 0) {
-			Statement last = md.statementList.get(md.statementList.size()-1);
+		if (md.getStmtCount() > 0) {
+			Statement last = md.getStatement(md.getStmtCount()-1);
 			checkReturn(md, last, scope);
 		} else {
 			checkReturn(md, null, scope);
@@ -148,7 +160,7 @@ public class IdentificationVisitor extends Visitor {
 		if (last == null || !(last instanceof ReturnStmt)) {
 			if (isVoid) {
 				ReturnStmt rtn = new ReturnStmt(null);
-				md.statementList.add(rtn);
+				md.appendStatement(rtn);
 				
 				rtn.visit(this, scope);
 			} else throw new ReturnMissingException(md, md.posn);

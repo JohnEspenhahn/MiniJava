@@ -146,15 +146,17 @@ public class CodeGenVisitor extends Visitor {
 
 	@Override
 	public Object visitMethodDecl(MethodDecl md, Object arg) {
-		frame = new Frame(md.parameterDeclList.size());
+		frame = new Frame(md.getParamCount());
 		
-		for (int i = 0, len = md.parameterDeclList.size(); i < len; i++) {
-			ParameterDecl pd = md.parameterDeclList.get(i);
+		int len = md.getParamCount();
+		for (int i = 0; i < len; i++) {
+			ParameterDecl pd = md.getParameter(i);
 			pd.setLocalOffset(-len+i); // (-len...-1)
 		}
 		
 		md.setAddr(Machine.nextInstrAddr());		
-		for (Statement s: md.statementList) {
+		for (int i = 0; i < md.getStmtCount(); i++) {
+			Statement s = md.getStatement(i);
 			s.visit(this, null);
 		}
 		
@@ -245,6 +247,10 @@ public class CodeGenVisitor extends Visitor {
 		if (md == GlobalClasses.PRINTLN_DECL) {
 			argList.get(0).visit(this, null); // Load int
 			Machine.emit(Prim.putintnl);
+			return;
+		} else if (md == GlobalClasses.PRINT_DECL) {
+			argList.get(0).visit(this, null); // Load char
+			Machine.emit(Prim.put);
 			return;
 		} else if (md == GlobalClasses.STRING_CHARAT_DECL) {
 			((QRef) methodRef).ref.visit(this, null); // Load address of string
@@ -487,7 +493,6 @@ public class CodeGenVisitor extends Visitor {
 
 	@Override
 	public Object visitIdentifier(Identifier id, Object arg) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -548,19 +553,16 @@ public class CodeGenVisitor extends Visitor {
 
 	@Override
 	public Object visitThisDecl(ThisDecl decl, Object arg) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visitArrayIdxDecl(ArrayIdxDecl decl, Object arg) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visitStringLiteralDecl(StringLiteralDecl sld, Object o) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
