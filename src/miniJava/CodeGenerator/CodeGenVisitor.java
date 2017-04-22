@@ -15,6 +15,7 @@ import miniJava.AbstractSyntaxTrees.CallExpr;
 import miniJava.AbstractSyntaxTrees.CallStmt;
 import miniJava.AbstractSyntaxTrees.ClassDecl;
 import miniJava.AbstractSyntaxTrees.ClassType;
+import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.ExprList;
 import miniJava.AbstractSyntaxTrees.Expression;
 import miniJava.AbstractSyntaxTrees.FieldDecl;
@@ -41,6 +42,7 @@ import miniJava.AbstractSyntaxTrees.StringLiteral;
 import miniJava.AbstractSyntaxTrees.StringLiteralDecl;
 import miniJava.AbstractSyntaxTrees.ThisDecl;
 import miniJava.AbstractSyntaxTrees.ThisRef;
+import miniJava.AbstractSyntaxTrees.TypeKind;
 import miniJava.AbstractSyntaxTrees.UnaryExpr;
 import miniJava.AbstractSyntaxTrees.VarDecl;
 import miniJava.AbstractSyntaxTrees.VarDeclStmt;
@@ -190,9 +192,17 @@ public class CodeGenVisitor extends Visitor {
 
 	@Override
 	public Object visitBlockStmt(BlockStmt stmt, Object arg) {
+		int startLocals = frame.peekLocalBase();
+		
 		for (Statement s: stmt.sl) {
 			s.visit(this, null);
 		}
+		
+		// Remove locals that only exist in this block
+		int blockLocals = frame.peekLocalBase() - startLocals;
+		Machine.emit(Op.POP, blockLocals);
+		frame.popLocals(blockLocals);
+		
 		return null;
 	}
 
@@ -212,7 +222,14 @@ public class CodeGenVisitor extends Visitor {
 
 	@Override
 	public Object visitCallStmt(CallStmt stmt, Object arg) {
-		handleCall(stmt.argList, stmt.methodRef);		
+		handleCall(stmt.argList, stmt.methodRef);
+		
+		// Stand alone call, pop non-void return value
+		Declaration methodDecl = stmt.methodRef.getDecl();
+		if (methodDecl.type.typeKind != TypeKind.VOID) {
+			Machine.emit(Op.POP, 1);
+		}
+		
 		return null;
 	}
 
@@ -362,8 +379,35 @@ public class CodeGenVisitor extends Visitor {
 	@Override
 	public Object visitBinaryExpr(BinaryExpr expr, Object arg) {
 		expr.left.visit(this, null);
+		
+		int short_circuit = -1;
+		if (expr.operator.kind == TokenKind.AND) { 
+			// Short circuit and if first condition false
+			short_circuit = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF, 0, Reg.CB, -1);
+		} else if (expr.operator.kind == TokenKind.OR) {
+			short_circuit = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF, 1, Reg.CB, -1);
+		}
+		
 		expr.right.visit(this, null);
 		expr.operator.visit(this, null);
+		
+		if (short_circuit >= 0) {
+			// Skip re-pushing value if didn't jump short circuit
+			int skip = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMP, Reg.CB, -1);
+			
+			// Re-push short circuit value
+			Machine.patch(short_circuit, Machine.nextInstrAddr());
+			if (expr.operator.kind == TokenKind.AND)
+				Machine.emit(Op.LOADL, 0); // "and". Must be false
+			else
+				Machine.emit(Op.LOADL, 1); // "or". Must be true
+			
+			Machine.patch(skip, Machine.nextInstrAddr());
+		}
+		
 		return null;
 	}
 

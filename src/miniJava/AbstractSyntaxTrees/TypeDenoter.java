@@ -16,6 +16,11 @@ abstract public class TypeDenoter extends AST {
         typeKind = type;
     }
     
+    /**
+     * Get a member of this type
+     * @param id The identifier of the member
+     * @return The member or null if not found
+     */
     public abstract MemberDecl getMember(Identifier id);
     
 }

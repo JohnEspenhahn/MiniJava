@@ -42,7 +42,7 @@ public class Compiler {
 					TypeErrors errs = new TypeVisitor().visit(pck);
 					if (pck.main == null) {
 						// Check for required main method
-						System.out.print("No main method found");
+						System.out.print("*** No main method found");
 						System.exit(4);
 					} else if (errs.size() > 0) {
 						// Output type errors
@@ -53,6 +53,7 @@ public class Compiler {
 					} else {
 						(new CodeGenVisitor()).visit(pck);
 						writeObjFiles(fileName + ".mJAM");
+						System.exit(0);
 					}
 				} else {
 					System.exit(4);

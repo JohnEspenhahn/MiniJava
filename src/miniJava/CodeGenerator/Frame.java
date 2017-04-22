@@ -9,6 +9,14 @@ public class Frame {
 		this.numArgs = numArgs;
 	}
 	
+	public void popLocals(int cnt) {
+		nextLocalBase -= cnt;
+	}
+	
+	public int peekLocalBase() {
+		return nextLocalBase;
+	}
+	
 	public int getNextLocalBase() {
 		return nextLocalBase++;
 	}

@@ -3,6 +3,11 @@ package miniJava.AbstractSyntaxTrees;
 import miniJava.CodeGenerator.RuntimeDescription.RuntimeDescription;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
+/**
+ * Special declaration for linking to an element of an array, rather than the array itself
+ * @author jesp
+ *
+ */
 public class ArrayIdxDecl extends Declaration {
 	private Declaration arrDecl;
 	

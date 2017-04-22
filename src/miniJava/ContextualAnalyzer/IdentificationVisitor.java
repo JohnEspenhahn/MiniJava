@@ -232,14 +232,6 @@ public class IdentificationVisitor extends Visitor {
 	}
 
 	@Override
-	public Object visitCallStmt(CallStmt stmt, Object arg) {
-		stmt.methodRef.visit(this, scope);
-		for (Expression e: stmt.argList)
-			e.visit(this, scope);
-		return null;
-	}
-
-	@Override
 	public Object visitReturnStmt(ReturnStmt stmt, Object arg) {
 		stmt.wrappingMethod = scope.getCurrentMethod();
 		if (stmt.returnExpr != null) stmt.returnExpr.visit(this, scope);	
@@ -291,10 +283,24 @@ public class IdentificationVisitor extends Visitor {
 		expr.ref.visit(this, scope);
 		return null;
 	}
+	
+	@Override
+	public Object visitCallStmt(CallStmt stmt, Object arg) {
+		stmt.methodRef.visit(this, scope);
+		if (!(stmt.methodRef.getDecl() instanceof MethodDecl))
+			throw new UndefinedReferenceException(stmt.methodRef);
+		
+		for (Expression e: stmt.argList)
+			e.visit(this, scope);
+		return null;
+	}
 
 	@Override
 	public Object visitCallExpr(CallExpr expr, Object arg) {
 		expr.methodRef.visit(this, scope);
+		if (!(expr.methodRef.getDecl() instanceof MethodDecl))
+			throw new UndefinedReferenceException(expr.methodRef);
+		
 		for (Expression e: expr.argList)
 			e.visit(this, scope);
 		return null;
