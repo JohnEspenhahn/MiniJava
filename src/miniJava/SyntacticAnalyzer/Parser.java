@@ -104,10 +104,10 @@ public class Parser {
 	}
 	
 	public Package parseProgram() {
-		return parseProgram(true);
+		return parseProgram("", true);
 	}
 
-	public Package parseProgram(boolean print_stacktrace) {
+	public Package parseProgram(String package_name, boolean print_stacktrace) {
 		// Load first token
 		Token first = this.ct;
 
@@ -115,7 +115,7 @@ public class Parser {
 		try {
 			TokenKind k = ct.getKind();
 			while (k == PUBLIC || k == CLASS) {
-				classes.add(parseClassDec());
+				classes.add(parseClassDec(package_name));
 				k = ct.getKind();
 			}
 
@@ -129,7 +129,7 @@ public class Parser {
 		return new Package(classes, first.getStart());
 	}
 
-	ClassDecl parseClassDec() throws SyntaxError {
+	ClassDecl parseClassDec(String package_name) throws SyntaxError {
 		// Optionally allow "public class"
 		if (ct.getKind() == TokenKind.PUBLIC)
 			acceptIt();
@@ -155,7 +155,7 @@ public class Parser {
 		
 		accept(CURL_CLOSE);
 		
-		return new ClassDecl(cn.getSpelling(), fields, methods, cn.getStart());
+		return new ClassDecl(package_name, cn.getSpelling(), fields, methods, cn.getStart());
 	}
 	
 	MemberDecl parseDeclare() throws SyntaxError {

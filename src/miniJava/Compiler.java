@@ -33,7 +33,7 @@ public class Compiler {
 
 		try {
 			Parser p = new Parser(new Scanner(new SourceFile(f)));
-			miniJava.AbstractSyntaxTrees.Package pck = p.parseProgram(false);
+			miniJava.AbstractSyntaxTrees.Package pck = p.parseProgram("", false);
 			if (pck == null) {
 				System.exit(4);
 			} else {

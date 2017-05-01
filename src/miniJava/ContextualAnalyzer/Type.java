@@ -69,13 +69,13 @@ public class Type {
 		} else if (kind == TypeKind.ARRAY) {
 			return ixType.toString() + "[]";
 		} else if (kind == TypeKind.BOOLEAN) {
-			return "bool";
+			return "boolean";
 		} else if (kind == TypeKind.INT) {
 			return "int";
 		} else if (kind == TypeKind.VOID) {
 			return "void";
 		} else {
-			return "error";
+			return ".error";
 		}
 	}
 	

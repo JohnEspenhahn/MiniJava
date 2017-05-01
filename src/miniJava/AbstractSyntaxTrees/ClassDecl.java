@@ -18,15 +18,21 @@ public class ClassDecl extends Declaration {
 	public MethodDeclList methodDeclList;
 	
 	public Scope scope;
+	public String full_name;
 	
-	public ClassDecl(String cn, FieldDeclList fdl, MethodDeclList mdl) {
-		this(cn, fdl, mdl, SourcePosition.ZERO);
+	public ClassDecl(String package_name, String cn, FieldDeclList fdl, MethodDeclList mdl) {
+		this(package_name, cn, fdl, mdl, SourcePosition.ZERO);
 	}
 
-	public ClassDecl(String cn, FieldDeclList fdl, MethodDeclList mdl, SourcePosition posn) {
+	public ClassDecl(String package_name, String cn, FieldDeclList fdl, MethodDeclList mdl, SourcePosition posn) {
 		super(cn, new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, cn, null, null))), posn);
 		fieldDeclList = fdl;
 		methodDeclList = mdl;
+		
+		// Create full name
+		full_name = package_name;
+		if (full_name.length() > 0) full_name = full_name.concat(".");
+		full_name = full_name.concat(cn);
 	}
 
 	public Object visit(Visitor v, Object o) {
@@ -58,6 +64,6 @@ public class ClassDecl extends Declaration {
 	
 	@Override
 	public String toString() {
-		return "class_" + id;
+		return full_name;
 	}
 }

@@ -1,6 +1,5 @@
 package miniJava.ContextualAnalyzer;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,14 +30,8 @@ public class Scope {
 		for (int i = 0; i < ds.length; i++) {
 			Declaration d = (Declaration) ds[i];
 			if (d instanceof MethodOverloadDecl) {
-				Type t1 = null;
-				MethodOverloadDecl mod = (MethodOverloadDecl) d;
-				for (int j = 0; j < mod.getMethodCount(); j++) {
-					MethodDecl method = mod.getMethod(j);
-					Type t2 = (Type) method.type.visit(visitor, null);
-					if (t1 == null) t1 = t2;
-					else visitor.checkEquals(t1, t2, method);
-				}
+				MethodOverloadDecl mod = (MethodOverloadDecl) d;				
+				mod.buildLookupTree(visitor);
 			}
 		}
 	}
@@ -49,7 +42,14 @@ public class Scope {
 		
 		Declaration prev = decls.get(decl.name);
 		if (prev != null)
-			throw new DuplicateDefinitionException(decl);
+			// Check for overloading
+			if (prev instanceof MethodDecl && decl instanceof MethodDecl) {
+				this.decls.put(decl.name, new MethodOverloadDecl((MethodDecl) prev, (MethodDecl) decl));
+			} else if (prev instanceof MethodOverloadDecl && decl instanceof MethodDecl) {
+				((MethodOverloadDecl) prev).addMethod((MethodDecl) decl);
+			} else {
+				throw new DuplicateDefinitionException(decl);
+			}
 		else
 			this.decls.put(decl.name, decl);
 	}

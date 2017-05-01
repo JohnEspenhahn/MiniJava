@@ -22,6 +22,8 @@ import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenKind;
 
 public class GlobalClasses {
+	public static String JAVA_LANG = "java.lang";
+	
 	public static ClassDecl STRING_DECL;
 	public static ClassType CLASSTYPE_STRING;
 	public static Type TYPE_STRING;
@@ -59,7 +61,7 @@ public class GlobalClasses {
 				EqualsParams, new StatementList());
 		StringMethods.add(STRING_EQUALS_DECL);
 		
-		STRING_DECL = new ClassDecl("String", new FieldDeclList(), StringMethods);
+		STRING_DECL = new ClassDecl(JAVA_LANG, "String", new FieldDeclList(), StringMethods);
 		
 		TYPE_STRING = new Type(TypeKind.CLASS, GlobalClasses.STRING_DECL);
 		CLASSTYPE_STRING.setDecl(STRING_DECL);
@@ -72,7 +74,7 @@ public class GlobalClasses {
 				new ClassType(new Identifier(new Token(TokenKind.IDENTIFIER, "_PrintStream", null, null)), null), 
 				"out", null);
 		SystemFields.add(FSystemOut);
-		ClassDecl System = new ClassDecl("System", SystemFields, new MethodDeclList());
+		ClassDecl System = new ClassDecl(JAVA_LANG, "System", SystemFields, new MethodDeclList());
 		stack.declare(System);
 		stack.openScope(System);
 		stack.declare(FSystemOut);
@@ -92,7 +94,7 @@ public class GlobalClasses {
 				new FieldDecl(false, false, new BaseType(TypeKind.VOID, null), "print"),
 				PrintParams, new StatementList());
 		PrintStreamMethods.add(PRINT_DECL);
-		ClassDecl PrintStream = new ClassDecl("_PrintStream", new FieldDeclList(), PrintStreamMethods);
+		ClassDecl PrintStream = new ClassDecl(JAVA_LANG, "_PrintStream", new FieldDeclList(), PrintStreamMethods);
 		stack.declare(PrintStream);
 		stack.openScope(PrintStream);
 		stack.declare(PRINTLN_DECL);

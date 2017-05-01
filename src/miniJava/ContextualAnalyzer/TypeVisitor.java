@@ -185,7 +185,7 @@ public class TypeVisitor extends Visitor {
 
 		MethodDecl decl = (MethodDecl) baseDecl;
 		if (decl instanceof MethodOverloadDecl)
-			decl = ((MethodOverloadDecl) decl).getMethod(pTypes, this);
+			decl = ((MethodOverloadDecl) decl).getMethod(pTypes);
 		
 		if (decl == null) {
 			this.errors.add(new TypeException("A method with the given parameter types could not be found", stmt));
